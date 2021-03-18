@@ -83,3 +83,7 @@ lint/generated/
 lint/outputs/
 lint/tmp/
 # lint/reports/
+
+app/src/.DS_Store
+
+.DS_Store
