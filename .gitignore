@@ -87,3 +87,5 @@ lint/tmp/
 app/src/.DS_Store
 
 .DS_Store
+
+.idea/
