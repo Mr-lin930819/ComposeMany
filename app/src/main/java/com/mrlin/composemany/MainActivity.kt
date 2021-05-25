@@ -6,17 +6,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,11 +22,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mrlin.composemany.ui.theme.ComposeManyTheme
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,20 +42,22 @@ class MainActivity : AppCompatActivity() {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Greeting(name: String, scaffoldState: ScaffoldState = rememberScaffoldState()) {
+fun Greeting(
+    name: String, scaffoldState: ScaffoldState = rememberScaffoldState(),
+    viewModel: MainViewModel = viewModel()
+) {
     val composableScope = rememberCoroutineScope()
-    val dateTime = remember { mutableStateOf("") }
-    composableScope.launch {
-        while (true) {
-            delay(1000)
-            dateTime.value = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA).format(Date())
-        }
-    }
+    val dateTime: String by viewModel.time.observeAsState("")
+    viewModel.runTimer()
     Scaffold(topBar = {
         TopAppBar(title = {
-            Row {
-                Text(text = "百斯贝测试\t")
-                Text(text = dateTime.value)
+            Row(
+                Modifier.fillMaxWidth().padding(all = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = name)
+                Text(text = dateTime, style = MaterialTheme.typography.body2)
             }
         }, navigationIcon = {
             IconButton(onClick = {
