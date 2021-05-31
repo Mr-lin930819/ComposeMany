@@ -13,18 +13,22 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.mrlin.composemany.ui.theme.ComposeManyTheme
@@ -92,12 +96,7 @@ fun Greeting(
                             .copy(green = -60f)
                     )
             )
-            Card(
-                Modifier
-                    .padding(all = 8.dp)
-                    .fillMaxWidth(),
-                shape = MaterialTheme.shapes.medium.copy(all = CornerSize(10.dp))
-            ) {
+            TopCard {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     HeadTip(Modifier.weight(1.0f), title = "稳健理财", content = "近一年3.53%")
                     Box(
@@ -109,17 +108,24 @@ fun Greeting(
                     HeadTip(Modifier.weight(1.0f), title = "进阶理财", content = "追求更高收益")
                 }
             }
-            Card(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                shape = MaterialTheme.shapes.medium.copy(all = CornerSize(10.dp))
-            ) {
+            TopCard {
                 DetailTip()
+            }
+            TopCard {
+                GoodOpportunityTip()
             }
         }
     }
 }
+
+@Composable
+fun TopCard(content: @Composable () -> Unit) = Card(
+    Modifier
+        .fillMaxWidth()
+        .padding(8.dp),
+    shape = MaterialTheme.shapes.medium.copy(all = CornerSize(10.dp)),
+    content = content
+)
 
 @Composable
 fun HeadTip(modifier: Modifier = Modifier, title: String = "", content: String = "") {
@@ -133,7 +139,9 @@ fun HeadTip(modifier: Modifier = Modifier, title: String = "", content: String =
                 Text(text = content, style = MaterialTheme.typography.caption)
             }
             Image(
-                modifier = Modifier.width(48.dp).height(48.dp),
+                modifier = Modifier
+                    .width(48.dp)
+                    .height(48.dp),
                 painter = painterResource(id = R.drawable.discuss),
                 contentDescription = ""
             )
@@ -248,7 +256,11 @@ fun IndexBox(modifier: Modifier, indexName: String, indexValue: Double, indexRat
 
 @Composable
 fun HotBox(title: String, stamp: String = "", content: @Composable (BoxScope.() -> Unit)) {
-    Card(Modifier.fillMaxWidth(), backgroundColor = Color.LightGray.copy(alpha = 0.2f), elevation = 0.dp) {
+    Card(
+        Modifier.fillMaxWidth(),
+        backgroundColor = Color.LightGray.copy(alpha = 0.2f),
+        elevation = 0.dp
+    ) {
         Column(Modifier.padding(8.dp)) {
             Text(text = title, fontWeight = FontWeight.Bold)
             Box(Modifier.padding(vertical = 8.dp), content = content)
@@ -256,6 +268,99 @@ fun HotBox(title: String, stamp: String = "", content: @Composable (BoxScope.() 
                 Text(text = stamp, style = MaterialTheme.typography.caption)
             }
         }
+    }
+}
+
+@Composable
+fun GoodOpportunityTip() {
+    var index by remember {
+        mutableStateOf(0)
+    }
+    Column(Modifier.padding(8.dp)) {
+        TabRow(
+            selectedTabIndex = index,
+            modifier = Modifier.height(48.dp),
+            backgroundColor = Color.White,
+            contentColor = Color.White
+        ) {
+            listOf("新发基金", "人气好基", "高端理财").forEachIndexed { i, s ->
+                Tab(
+                    selected = i == index,
+                    onClick = { index = i },
+                    selectedContentColor = Color.Blue,
+                    unselectedContentColor = Color.Black,
+                    text = {
+                        Text(text = s)
+                    })
+            }
+        }
+        when (index) {
+            0 -> NewFund()
+            else -> Text(text = "暂无此功能")
+        }
+    }
+}
+
+@Composable
+fun NewFund() {
+    @Composable
+    fun DataItem(data: String, subContent: String) {
+        Text(text = buildAnnotatedString {
+            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.Red)) {
+                append(data)
+            }
+            append("\n")
+            withStyle(style = SpanStyle(fontSize = 12.sp)) {
+                append(subContent)
+            }
+        }, textAlign = TextAlign.Center)
+    }
+    Column {
+        Box(
+            modifier = Modifier
+                .background(
+                    brush = Brush.verticalGradient(
+                        listOf(Color(red = 255, green = 241, blue = 242), Color.White)
+                    )
+                )
+                .fillMaxWidth()
+                .height(150.dp)
+        )
+        TitleDivider(title = "相关数据")
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
+            DataItem(data = "王园园", subContent = "拟任基金经理")
+            DataItem(data = "TOP3", subContent = "代表作同类业绩")
+            DataItem(data = "超8700万", subContent = "团队受用户选择")
+        }
+        TitleDivider(title = "大咖说")
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Image(
+                painter = painterResource(id = R.drawable.certificate),
+                contentDescription = "",
+                modifier = Modifier
+                    .size(56.dp, 56.dp)
+                    .padding(8.dp)
+            )
+            Box(
+                Modifier
+                    .background(Color(239, 243, 255))
+                    .padding(8.dp)) {
+                Text(text = "这支基金或将得到天惠的传承？朱少醒这样评价她...")
+            }
+        }
+    }
+}
+
+@Composable
+fun TitleDivider(title: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Divider(Modifier.weight(1.0f))
+        Text(
+            text = title,
+            style = MaterialTheme.typography.caption,
+            modifier = Modifier.padding(8.dp)
+        )
+        Divider(Modifier.weight(1.0f))
     }
 }
 
