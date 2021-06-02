@@ -8,7 +8,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -19,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -31,6 +29,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.mrlin.composemany.ui.component.TitleDivider
+import com.mrlin.composemany.ui.component.TitleRow
+import com.mrlin.composemany.ui.component.TopCard
 import com.mrlin.composemany.ui.theme.ComposeManyTheme
 import kotlinx.coroutines.launch
 
@@ -91,9 +92,7 @@ fun Greeting(
                     .height(80.dp)
                     .fillMaxWidth()
                     .background(
-                        color = Color.Blue
-                            .convert(ColorSpaces.CieLab)
-                            .copy(green = -60f)
+                        color = MaterialTheme.colors.primary
                     )
             )
             TopCard {
@@ -114,18 +113,25 @@ fun Greeting(
             TopCard {
                 GoodOpportunityTip()
             }
+            TopCard {
+                FundList()
+            }
+            Box(Modifier.padding(horizontal = 36.dp)) {
+                TitleDivider(title = "蚂蚁财富")
+            }
+            Text(
+                text = "过往业绩不预示产品未来表现，市场有风险，投资需谨慎",
+                style = MaterialTheme.typography.caption.copy(
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            )
         }
     }
 }
-
-@Composable
-fun TopCard(content: @Composable () -> Unit) = Card(
-    Modifier
-        .fillMaxWidth()
-        .padding(8.dp),
-    shape = MaterialTheme.shapes.medium.copy(all = CornerSize(10.dp)),
-    content = content
-)
 
 @Composable
 fun HeadTip(modifier: Modifier = Modifier, title: String = "", content: String = "") {
@@ -150,7 +156,7 @@ fun HeadTip(modifier: Modifier = Modifier, title: String = "", content: String =
 }
 
 @Composable
-fun DetailTip() {
+private fun DetailTip() {
     Box(
         Modifier
             .fillMaxWidth()
@@ -197,7 +203,7 @@ fun DetailTip() {
  * 热门基金
  */
 @Composable
-fun HotFundView() {
+private fun HotFundView() {
     Column {
         Row(Modifier.height(50.dp)) {
             Box(
@@ -235,7 +241,7 @@ fun HotFundView() {
 }
 
 @Composable
-fun IndexBox(modifier: Modifier, indexName: String, indexValue: Double, indexRate: Double) {
+private fun IndexBox(modifier: Modifier, indexName: String, indexValue: Double, indexRate: Double) {
     Box(modifier = modifier) {
         val color = if (indexRate < 0) Color.Green else Color.Red
         Column {
@@ -255,7 +261,7 @@ fun IndexBox(modifier: Modifier, indexName: String, indexValue: Double, indexRat
 }
 
 @Composable
-fun HotBox(title: String, stamp: String = "", content: @Composable (BoxScope.() -> Unit)) {
+private fun HotBox(title: String, stamp: String = "", content: @Composable (BoxScope.() -> Unit)) {
     Card(
         Modifier.fillMaxWidth(),
         backgroundColor = Color.LightGray.copy(alpha = 0.2f),
@@ -272,7 +278,7 @@ fun HotBox(title: String, stamp: String = "", content: @Composable (BoxScope.() 
 }
 
 @Composable
-fun GoodOpportunityTip() {
+private fun GoodOpportunityTip() {
     var index by remember {
         mutableStateOf(0)
     }
@@ -302,7 +308,97 @@ fun GoodOpportunityTip() {
 }
 
 @Composable
-fun NewFund() {
+private fun FundList() {
+    Column(Modifier.fillMaxWidth()) {
+        TitleRow(Modifier.background(Color(255, 242, 226))) {
+            Text(text = "支付宝 金选", style = MaterialTheme.typography.h6)
+            Text(
+                text = "产品百里挑一 深度调研超1000次",
+                style = MaterialTheme.typography.caption.copy(color = Color.Gray)
+            )
+        }
+
+        Column(Modifier.fillMaxWidth()) {
+            TitleRow {
+                Text(text = "稳中进取", fontWeight = FontWeight.Bold)
+                Text(text = "更多")
+            }
+            Row(Modifier.padding(8.dp)) {
+                FundBox(
+                    "易方达增强回报债券B", 13.18, "近一年涨跌幅", "12个月", "建议持有",
+                    modifier = Modifier.weight(1.0f)
+                )
+                Spacer(Modifier.width(8.dp))
+                FundBox(
+                    "南方安泰混合A", 15.57, "近一年涨跌幅", "12个月", "建议持有",
+                    modifier = Modifier.weight(1.0f)
+                )
+            }
+        }
+        Divider()
+        Column(Modifier.fillMaxWidth()) {
+            TitleRow {
+                Text(text = "金选好基", fontWeight = FontWeight.Bold)
+                Text(text = "更多")
+            }
+            Column(Modifier.padding(8.dp)) {
+                FundBox(
+                    "基金界元老，16座大奖加持", 48.23, "近一年涨跌幅", "金牛奖", "行业大奖",
+                    footer = "中欧新趋势混合（LOF）A"
+                )
+                Spacer(Modifier.height(16.dp))
+                FundBox(
+                    "8年老将，稳健风格，低波动低回撤", 33.70, "近一年涨跌幅", "低波动低回撤", "产品特色",
+                    footer = "鹏华盛世创新混合（LOF）"
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun FundBox(
+    title: String,
+    rate: Double,
+    rateCaption: String,
+    content: String,
+    contentCaption: String,
+    modifier: Modifier = Modifier,
+    footer: String? = null
+) {
+    Column(modifier = modifier) {
+        Text(text = title, fontWeight = FontWeight.Bold)
+        Row(
+            Modifier
+                .padding(vertical = 8.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(text = buildAnnotatedString {
+                withStyle(
+                    style = MaterialTheme.typography.h6.copy(color = Color.Red).toSpanStyle()
+                ) {
+                    append("${rate.toBigDecimal().toPlainString()}%")
+                }
+                append("\n")
+                withStyle(style = MaterialTheme.typography.caption.toSpanStyle()) {
+                    append(rateCaption)
+                }
+            })
+            Text(text = buildAnnotatedString {
+                append(content)
+                append("\n")
+                withStyle(style = MaterialTheme.typography.caption.toSpanStyle()) {
+                    append(contentCaption)
+                }
+            })
+        }
+        footer?.let { Text(text = it) }
+    }
+}
+
+@Composable
+private fun NewFund() {
     @Composable
     fun DataItem(data: String, subContent: String) {
         Text(text = buildAnnotatedString {
@@ -344,27 +440,21 @@ fun NewFund() {
             Box(
                 Modifier
                     .background(Color(239, 243, 255))
-                    .padding(8.dp)) {
+                    .padding(8.dp)
+            ) {
                 Text(text = "这支基金或将得到天惠的传承？朱少醒这样评价她...")
             }
         }
     }
 }
 
+@Preview(showBackground = true, name = "基金列表")
 @Composable
-fun TitleDivider(title: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Divider(Modifier.weight(1.0f))
-        Text(
-            text = title,
-            style = MaterialTheme.typography.caption,
-            modifier = Modifier.padding(8.dp)
-        )
-        Divider(Modifier.weight(1.0f))
-    }
+fun FundListPreview() {
+    FundList()
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "热点面板")
 @Composable
 fun HotPreview() {
     HotBox(title = "今日热点", stamp = "快讯 14-12") {
