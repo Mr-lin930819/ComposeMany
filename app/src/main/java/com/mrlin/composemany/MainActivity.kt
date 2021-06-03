@@ -96,13 +96,17 @@ fun Greeting(
                     )
             )
             TopCard {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    Modifier.height(IntrinsicSize.Min),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     HeadTip(Modifier.weight(1.0f), title = "稳健理财", content = "近一年3.53%")
-                    Box(
+                    Divider(
                         Modifier
-                            .height(48.dp)
+                            .fillMaxHeight()
                             .width(1.dp)
-                            .background(Color.Gray.copy(alpha = 0.2f))
+                            .padding(vertical = 8.dp),
+                        color = Color.Gray.copy(alpha = 0.2f)
                     )
                     HeadTip(Modifier.weight(1.0f), title = "进阶理财", content = "追求更高收益")
                 }
@@ -319,7 +323,7 @@ private fun FundList() {
         }
 
         Column(Modifier.fillMaxWidth()) {
-            TitleRow {
+            TitleRow(Modifier.padding(vertical = 8.dp)) {
                 Text(text = "稳中进取", fontWeight = FontWeight.Bold)
                 Text(text = "更多")
             }
@@ -328,7 +332,7 @@ private fun FundList() {
                     "易方达增强回报债券B", 13.18, "近一年涨跌幅", "12个月", "建议持有",
                     modifier = Modifier.weight(1.0f)
                 )
-                Spacer(Modifier.width(8.dp))
+                Spacer(Modifier.width(24.dp))
                 FundBox(
                     "南方安泰混合A", 15.57, "近一年涨跌幅", "12个月", "建议持有",
                     modifier = Modifier.weight(1.0f)
@@ -337,7 +341,7 @@ private fun FundList() {
         }
         Divider()
         Column(Modifier.fillMaxWidth()) {
-            TitleRow {
+            TitleRow(Modifier.padding(vertical = 8.dp)) {
                 Text(text = "金选好基", fontWeight = FontWeight.Bold)
                 Text(text = "更多")
             }
