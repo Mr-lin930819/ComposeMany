@@ -4,11 +4,11 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.animation.Animatable
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -167,7 +168,13 @@ private fun DetailTip() {
             .padding(8.dp)
     ) {
         Column {
-            Row {
+            var enabled: Boolean by remember { mutableStateOf(true) }
+            val alpha: Float by animateFloatAsState(if (enabled) 1f else 0.3f)
+            Row(
+                Modifier
+                    .clickable { enabled = !enabled }
+                    .graphicsLayer(alpha = alpha)
+            ) {
                 IndexBox(Modifier.weight(1.0f), "上证指数", 3593.61, -0.20)
                 IndexBox(Modifier.weight(1.0f), "深证成指", 14905.05, 0.35)
                 IndexBox(Modifier.weight(1.0f), "创业板指", 3285.36, 1.64)
@@ -266,9 +273,23 @@ private fun IndexBox(modifier: Modifier, indexName: String, indexValue: Double, 
 
 @Composable
 private fun HotBox(title: String, stamp: String = "", content: @Composable (BoxScope.() -> Unit)) {
+    val warningColor = Color.Red.copy(alpha = 0.2f)
+    val nonWarningColor = Color.LightGray.copy(alpha = 0.2f)
+    val boxBackground = remember { Animatable(nonWarningColor) }
+    var warning by remember { mutableStateOf(false) }
+    LaunchedEffect(warning) {
+        boxBackground.animateTo(
+            if (warning) warningColor else nonWarningColor,
+            animationSpec = tween(durationMillis = 500)
+        )
+    }
     Card(
-        Modifier.fillMaxWidth(),
-        backgroundColor = Color.LightGray.copy(alpha = 0.2f),
+        Modifier
+            .fillMaxWidth()
+            .clickable {
+                warning = !warning
+            },
+        backgroundColor = boxBackground.value,
         elevation = 0.dp
     ) {
         Column(Modifier.padding(8.dp)) {
