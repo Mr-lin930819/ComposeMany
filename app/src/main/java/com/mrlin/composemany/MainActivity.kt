@@ -13,7 +13,6 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -28,12 +27,12 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.mrlin.composemany.ui.component.TitleDivider
 import com.mrlin.composemany.ui.component.TitleRow
 import com.mrlin.composemany.ui.component.TopCard
 import com.mrlin.composemany.ui.theme.ComposeManyTheme
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -55,11 +54,11 @@ class MainActivity : AppCompatActivity() {
 @Composable
 fun Greeting(
     name: String,
-    dataTimeData: LiveData<String>,
+    dataTimeData: StateFlow<String>,
     scaffoldState: ScaffoldState = rememberScaffoldState(),
 ) {
     val composableScope = rememberCoroutineScope()
-    val dateTime: String by dataTimeData.observeAsState("")
+    val dateTime: String by dataTimeData.collectAsState("")
     Scaffold(topBar = {
         TopAppBar(title = {
             Row(
@@ -499,6 +498,6 @@ fun HotPreview() {
 @Composable
 fun DefaultPreview() {
     ComposeManyTheme {
-        Greeting("Android", MutableLiveData("2020-10-10 10:00:00"))
+        Greeting("Android", MutableStateFlow("2020-10-10 10:00:00"))
     }
 }
