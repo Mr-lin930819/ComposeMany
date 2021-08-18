@@ -1,4 +1,4 @@
-package com.mrlin.composemany
+package com.mrlin.composemany.fund
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MainViewModel : ViewModel() {
+class FundViewModel : ViewModel() {
     private val _time = MutableStateFlow("")
     val time: StateFlow<String> = _time
 
@@ -20,16 +20,7 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun menuList() = listOf(
-        Menu.Fund(), Menu.NetEaseMusic()
-    )
-
     companion object {
         val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA)
-    }
-
-    sealed class Menu(val name: String) {
-        class Fund : Menu("基金")
-        class NetEaseMusic : Menu("音乐")
     }
 }
