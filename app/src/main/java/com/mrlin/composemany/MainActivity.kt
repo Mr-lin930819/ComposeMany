@@ -25,12 +25,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.mrlin.composemany.fund.FundActivity
+import com.mrlin.composemany.pages.fund.FundActivity
+import com.mrlin.composemany.pages.music.NetEaseMusicSplashActivity
 import com.mrlin.composemany.ui.theme.ComposeManyTheme
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private val viewModel: MainViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,8 +45,8 @@ class MainActivity : AppCompatActivity() {
                     viewModel.runTimer()
                     Greeting("Android", viewModel.time, viewModel.menuList(), onMenuClick = { menu ->
                         when (menu) {
-                            is MainViewModel.Menu.Fund -> startActivity(Intent(this, FundActivity::class.java))
-                            is MainViewModel.Menu.NetEaseMusic -> TODO("无界面")
+                            is MainMenu.Fund -> startActivity(Intent(this, FundActivity::class.java))
+                            is MainMenu.NetEaseMusic -> startActivity(Intent(this, NetEaseMusicSplashActivity::class.java))
                         }
                     })
                 }
@@ -57,8 +60,8 @@ class MainActivity : AppCompatActivity() {
 private fun Greeting(
     name: String,
     dataTimeData: StateFlow<String>,
-    menuList: List<MainViewModel.Menu>,
-    onMenuClick: ((MainViewModel.Menu) -> Unit)? = null,
+    menuList: List<MainMenu>,
+    onMenuClick: ((MainMenu) -> Unit)? = null,
     scaffoldState: ScaffoldState = rememberScaffoldState(),
 ) {
     val composableScope = rememberCoroutineScope()
@@ -113,7 +116,7 @@ fun DefaultPreview() {
     ComposeManyTheme {
         Greeting(
             "Android", MutableStateFlow("2020-10-10 10:00:00"), listOf(
-                MainViewModel.Menu.Fund()
+                MainMenu.Fund()
             )
         )
     }

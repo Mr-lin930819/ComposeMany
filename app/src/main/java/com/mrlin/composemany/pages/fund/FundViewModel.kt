@@ -1,4 +1,4 @@
-package com.mrlin.composemany.fund
+package com.mrlin.composemany.pages.fund
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

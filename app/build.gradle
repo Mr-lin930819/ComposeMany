@@ -1,6 +1,8 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'kotlin-kapt'
+    id 'dagger.hilt.android.plugin'
 }
 
 android {
@@ -58,13 +60,17 @@ dependencies {
     //compose livedata扩展
     implementation "androidx.compose.runtime:runtime-livedata:$compose_version"
     //compose viewModel扩展
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha05"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha07"
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.1'
     implementation 'androidx.activity:activity-compose:1.3.0'
     //navigation
     implementation "androidx.navigation:navigation-compose:2.4.0-alpha06"
+    //hilt
+    implementation "com.google.dagger:hilt-android:$hilt_android_version"
+    kapt "com.google.dagger:hilt-compiler:$hilt_android_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'

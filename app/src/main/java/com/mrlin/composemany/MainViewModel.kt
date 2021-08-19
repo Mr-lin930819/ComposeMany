@@ -21,15 +21,15 @@ class MainViewModel : ViewModel() {
     }
 
     fun menuList() = listOf(
-        Menu.Fund(), Menu.NetEaseMusic()
+        MainMenu.Fund(), MainMenu.NetEaseMusic()
     )
 
     companion object {
         val timeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA)
     }
+}
 
-    sealed class Menu(val name: String) {
-        class Fund : Menu("基金")
-        class NetEaseMusic : Menu("音乐")
-    }
+sealed class MainMenu(val name: String) {
+    class Fund : MainMenu("基金")
+    class NetEaseMusic : MainMenu("音乐")
 }

@@ -1,4 +1,4 @@
-package com.mrlin.composemany.fund
+package com.mrlin.composemany.pages.fund
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
