@@ -8,16 +8,19 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import com.mrlin.composemany.model.User
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.mrlin.composemany.state.ViewState
+import com.mrlin.composemany.ui.theme.Blue500
 import com.mrlin.composemany.ui.theme.ComposeManyTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -28,12 +31,18 @@ class NetEaseMusicSplashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val systemUiController = rememberSystemUiController()
+            SideEffect {
+                systemUiController.setStatusBarColor(
+                    color = Blue500
+                )
+            }
             ComposeManyTheme {
-                val state by netEaseMusicViewModel.userState.collectAsState()
+                val userState by netEaseMusicViewModel.userState.collectAsState()
                 val viewState by netEaseMusicViewModel.viewState.collectAsState()
-                when (state) {
+                when (userState) {
                     is MusicHomeState.Visitor -> MusicLoginPage(netEaseMusicViewModel)
-                    is MusicHomeState.Login -> LoginUserPage((state as MusicHomeState.Login).user)
+                    is MusicHomeState.Login -> MusicHomePage((userState as MusicHomeState.Login).user)
                 }
                 if (viewState is ViewState.Busy) {
                     Loading()
@@ -42,17 +51,6 @@ class NetEaseMusicSplashActivity : AppCompatActivity() {
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun LoginUserPage(user: User?) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = Color.Cyan)
-    ) {
-        Text(text = "用户名：${user?.account?.userName.orEmpty()}", modifier = Modifier.align(Alignment.Center))
     }
 }
 

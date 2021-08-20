@@ -1,9 +1,17 @@
 package com.mrlin.composemany.di
 
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.dataStore
+import androidx.room.Room
+import com.mrlin.composemany.MusicSettings
 import com.mrlin.composemany.repository.NetEaseMusicApi
+import com.mrlin.composemany.repository.db.MusicDatabase
+import com.mrlin.composemany.repository.store.MusicSettingsSerializer
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -30,6 +38,20 @@ class AppModule {
     @Provides
     fun provideNetEaseMusicApi(@NetEaseMusicRetrofit retrofit: Retrofit): NetEaseMusicApi =
         retrofit.create(NetEaseMusicApi::class.java)
+
+    @Singleton
+    @Provides
+    fun provideMusicDatabase(@ApplicationContext context: Context): MusicDatabase =
+        Room.databaseBuilder(context, MusicDatabase::class.java, "net-ease-music").build()
+
+    @Provides
+    fun provideMusicSettings(@ApplicationContext context: Context): DataStore<MusicSettings> =
+        context.musicSettingsDataStore
+
+    private val Context.musicSettingsDataStore: DataStore<MusicSettings> by dataStore(
+        fileName = "music_settings.pb",
+        serializer = MusicSettingsSerializer
+    )
 }
 
 @Qualifier

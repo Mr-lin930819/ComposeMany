@@ -1,0 +1,175 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "61d724853a055db11f7ce43549162224",
+    "entities": [
+      {
+        "tableName": "User",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`loginType` INTEGER NOT NULL, `code` INTEGER NOT NULL, `token` TEXT, `cookie` TEXT, `accountId` INTEGER NOT NULL, `ua_id` INTEGER NOT NULL, `ua_user_name` TEXT NOT NULL, `ua_type` INTEGER NOT NULL, `ua_status` INTEGER NOT NULL, `ua_whitelist_authority` INTEGER NOT NULL, `ua_create_time` INTEGER NOT NULL, `ua_salt` TEXT NOT NULL, `ua_token_version` INTEGER NOT NULL, `ua_ban` INTEGER NOT NULL, `ua_baoyue_version` INTEGER NOT NULL, `ua_donate_version` INTEGER NOT NULL, `ua_vip_type` INTEGER NOT NULL, `ua_viptype_version` INTEGER NOT NULL, `ua_anonimous_user` INTEGER NOT NULL, `up_avatarImgIdStr` TEXT NOT NULL, `up_nickname` TEXT NOT NULL, `up_avatarUrl` TEXT NOT NULL, `up_signature` TEXT, PRIMARY KEY(`accountId`))",
+        "fields": [
+          {
+            "fieldPath": "loginType",
+            "columnName": "loginType",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "code",
+            "columnName": "code",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "token",
+            "columnName": "token",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "cookie",
+            "columnName": "cookie",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "accountId",
+            "columnName": "accountId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "account.id",
+            "columnName": "ua_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "account.userName",
+            "columnName": "ua_user_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "account.type",
+            "columnName": "ua_type",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "account.status",
+            "columnName": "ua_status",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "account.whitelistAuthority",
+            "columnName": "ua_whitelist_authority",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "account.createTime",
+            "columnName": "ua_create_time",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "account.salt",
+            "columnName": "ua_salt",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "account.tokenVersion",
+            "columnName": "ua_token_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "account.ban",
+            "columnName": "ua_ban",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "account.baoyueVersion",
+            "columnName": "ua_baoyue_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "account.donateVersion",
+            "columnName": "ua_donate_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "account.vipType",
+            "columnName": "ua_vip_type",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "account.viptypeVersion",
+            "columnName": "ua_viptype_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "account.anonimousUser",
+            "columnName": "ua_anonimous_user",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "profile.avatarImgIdStr",
+            "columnName": "up_avatarImgIdStr",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "profile.nickname",
+            "columnName": "up_nickname",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "profile.avatarUrl",
+            "columnName": "up_avatarUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "profile.signature",
+            "columnName": "up_signature",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "accountId"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [
+          {
+            "name": "index_User_ua_id",
+            "unique": true,
+            "columnNames": [
+              "ua_id"
+            ],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_User_ua_id` ON `${TABLE_NAME}` (`ua_id`)"
+          }
+        ],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '61d724853a055db11f7ce43549162224')"
+    ]
+  }
+}
