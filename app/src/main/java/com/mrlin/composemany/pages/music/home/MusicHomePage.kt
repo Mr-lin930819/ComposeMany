@@ -1,23 +1,33 @@
-package com.mrlin.composemany.pages.music
+package com.mrlin.composemany.pages.music.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Tab
+import androidx.compose.material.TabRow
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberImagePainter
 import coil.transform.CircleCropTransformation
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
-import com.mrlin.composemany.model.Account
-import com.mrlin.composemany.model.Profile
-import com.mrlin.composemany.model.User
+import com.mrlin.composemany.pages.music.NetEaseMusicViewModel
+import com.mrlin.composemany.repository.entity.Account
+import com.mrlin.composemany.repository.entity.Profile
+import com.mrlin.composemany.repository.entity.Recommend
+import com.mrlin.composemany.repository.entity.User
 import com.mrlin.composemany.ui.theme.ComposeManyTheme
 import kotlinx.coroutines.launch
 import java.util.*
@@ -27,14 +37,34 @@ import java.util.*
  * @author mrlin
  * 创建于 2021年08月20日
  ******************************** */
-@OptIn(ExperimentalPagerApi::class)
 @Composable
-fun MusicHomePage(user: User?) {
+fun MusicHomePage(user: User?, musicViewModel: NetEaseMusicViewModel = viewModel()) {
+    val navController = rememberNavController()
+    NavHost(navController = navController, startDestination = HomeScreen.Home.route) {
+        composable(HomeScreen.Home.route) {
+            Home(user, musicViewModel, onToPlayList = {
+                navController.navigate(HomeScreen.PlayList.route)
+            })
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalPagerApi::class)
+private fun Home(
+    user: User?,
+    vm: NetEaseMusicViewModel? = null,
+    onToPlayList: ((Recommend) -> Unit)? = null
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = Color.Cyan)
+            .background(color = Color.White)
     ) {
+        val recommendList by vm?.recommendList?.collectAsState() ?: return
+        LaunchedEffect(key1 = true, block = {
+            vm?.loadRecommendList()
+        })
         Row(
             Modifier
                 .fillMaxHeight(0.16f)
@@ -42,18 +72,22 @@ fun MusicHomePage(user: User?) {
                 .background(color = MaterialTheme.colors.primary)
                 .padding(8.dp), verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(painter = rememberImagePainter(user?.profile?.avatarUrl.orEmpty(),
-                builder = {
-                    transformations(CircleCropTransformation())
-                }), contentDescription = null
+            Image(
+                painter = rememberImagePainter(user?.profile?.avatarUrl.orEmpty(),
+                    builder = {
+                        transformations(CircleCropTransformation())
+                    }), contentDescription = null
             )
             Column {
                 Text(text = user?.profile?.nickname.orEmpty(), style = MaterialTheme.typography.h5)
-                Text(text = user?.profile?.signature.orEmpty(), style = MaterialTheme.typography.caption)
+                Text(
+                    text = user?.profile?.signature.orEmpty(),
+                    style = MaterialTheme.typography.caption
+                )
             }
         }
         val pages: List<Pair<String, @Composable () -> Unit>> = listOf(
-            "发现" to { Discovery() },
+            "发现" to { Discovery(recommendList, onToPlayList = onToPlayList) },
             "我的" to { My() },
             "动态" to { NewAction() }
         )
@@ -66,8 +100,16 @@ fun MusicHomePage(user: User?) {
                 }
             }
         }
-        HorizontalPager(state = pagerState) { page -> pages[page].second() }
+        HorizontalPager(
+            state = pagerState, verticalAlignment = Alignment.Top
+        ) { page -> pages[page].second() }
     }
+}
+
+private sealed class HomeScreen(val route: String) {
+    object Home : HomeScreen("home")
+    object DailySong : HomeScreen("dailySong")
+    object PlayList : HomeScreen("playList")
 }
 
 @Composable
@@ -76,13 +118,6 @@ private fun Tab(tab: String, selected: Boolean, onClick: () -> Unit) {
         selected = selected, onClick = onClick, modifier = Modifier.height(48.dp)
     ) {
         Text(text = tab)
-    }
-}
-
-@Composable
-private fun Discovery() {
-    Box(Modifier.fillMaxSize()) {
-        Text(text = "发现", modifier = Modifier.align(Alignment.Center))
     }
 }
 
@@ -104,7 +139,7 @@ private fun NewAction() {
 @Composable
 fun MusicHomePagePreview() {
     ComposeManyTheme {
-        MusicHomePage(
+        Home(
             user = User(
                 0, 200, Account(
                     id = 0,

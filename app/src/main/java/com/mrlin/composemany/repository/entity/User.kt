@@ -1,4 +1,4 @@
-package com.mrlin.composemany.model
+package com.mrlin.composemany.repository.entity
 
 import androidx.room.*
 

@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.mrlin.composemany.model.User
+import com.mrlin.composemany.repository.entity.User
 
 /*********************************
  * 用户数据库操作

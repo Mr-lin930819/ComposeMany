@@ -4,15 +4,19 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.dataStore
 import androidx.room.Room
+import com.mrlin.composemany.CookieStore
 import com.mrlin.composemany.MusicSettings
+import com.mrlin.composemany.net.PersistCookieJar
 import com.mrlin.composemany.repository.NetEaseMusicApi
 import com.mrlin.composemany.repository.db.MusicDatabase
+import com.mrlin.composemany.repository.store.CookieStoreSerializer
 import com.mrlin.composemany.repository.store.MusicSettingsSerializer
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Qualifier
@@ -29,9 +33,12 @@ class AppModule {
     @Singleton
     @NetEaseMusicRetrofit
     @Provides
-    fun provideNetEaseMusicRetrofit(): Retrofit = Retrofit.Builder()
+    fun provideNetEaseMusicRetrofit(
+        cookieDataStore: DataStore<CookieStore>
+    ): Retrofit = Retrofit.Builder()
         .baseUrl("https://mrlin-netease-cloud-music-api-iota-silk.vercel.app/")
         .addConverterFactory(GsonConverterFactory.create())
+        .client(OkHttpClient.Builder().cookieJar(PersistCookieJar(cookieDataStore)).build())
         .build()
 
     @Singleton
@@ -48,9 +55,18 @@ class AppModule {
     fun provideMusicSettings(@ApplicationContext context: Context): DataStore<MusicSettings> =
         context.musicSettingsDataStore
 
+    @Provides
+    fun provideCookieStore(@ApplicationContext context: Context): DataStore<CookieStore> =
+        context.cookieStoreDataStore
+
     private val Context.musicSettingsDataStore: DataStore<MusicSettings> by dataStore(
         fileName = "music_settings.pb",
         serializer = MusicSettingsSerializer
+    )
+
+    private val Context.cookieStoreDataStore: DataStore<CookieStore> by dataStore(
+        fileName = "cookie_store.pb",
+        serializer = CookieStoreSerializer
     )
 }
 

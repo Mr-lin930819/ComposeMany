@@ -12,6 +12,7 @@ import java.io.OutputStream
  * @author mrlin
  * 创建于 2021年08月20日
  ******************************** */
+@Suppress("BlockingMethodInNonBlockingContext")
 object MusicSettingsSerializer: Serializer<MusicSettings> {
     override val defaultValue: MusicSettings
         get() = MusicSettings.getDefaultInstance()

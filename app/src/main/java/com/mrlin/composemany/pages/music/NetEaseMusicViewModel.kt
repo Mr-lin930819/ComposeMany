@@ -3,10 +3,12 @@ package com.mrlin.composemany.pages.music
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mrlin.composemany.CookieStore
 import com.mrlin.composemany.MusicSettings
-import com.mrlin.composemany.model.User
 import com.mrlin.composemany.repository.NetEaseMusicApi
 import com.mrlin.composemany.repository.db.MusicDatabase
+import com.mrlin.composemany.repository.entity.Recommend
+import com.mrlin.composemany.repository.entity.User
 import com.mrlin.composemany.state.ViewState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -30,9 +32,11 @@ class NetEaseMusicViewModel @Inject constructor(
 ) : ViewModel() {
     private val _userState: MutableStateFlow<MusicHomeState> = MutableStateFlow(MusicHomeState.Visitor)
     private val _viewState: MutableStateFlow<ViewState> = MutableStateFlow(ViewState.Normal)
+    private val _recommendList: MutableStateFlow<List<Recommend>> = MutableStateFlow(emptyList())
 
     val userState: StateFlow<MusicHomeState> = _userState
     val viewState: StateFlow<ViewState> = _viewState
+    val recommendList: StateFlow<List<Recommend>> = _recommendList
 
     init {
         doBusyWork {
@@ -63,6 +67,11 @@ class NetEaseMusicViewModel @Inject constructor(
         } ?: throw Throwable("登录失败")
     }
 
+    fun loadRecommendList() = doBusyWork {
+        val recommendData = netEaseMusicApi.recommendResource().awaitResponse().takeIf { it.isSuccessful }?.body()
+        _recommendList.tryEmit(recommendData?.recommend.orEmpty())
+    }
+
     /**
      * 进行繁忙任务
      */
@@ -73,9 +82,12 @@ class NetEaseMusicViewModel @Inject constructor(
             _viewState.tryEmit(ViewState.Normal)
         } catch (t: Throwable) {
             _viewState.tryEmit(ViewState.Error(t.message.orEmpty()))
+            t.printStackTrace()
         }
     }
 }
+
+
 
 /*********************************
  * 音乐主页状态
