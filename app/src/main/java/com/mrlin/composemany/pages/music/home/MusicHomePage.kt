@@ -3,17 +3,16 @@ package com.mrlin.composemany.pages.music.home
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Tab
-import androidx.compose.material.TabRow
-import androidx.compose.material.Text
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -42,9 +41,18 @@ fun MusicHomePage(user: User?, musicViewModel: NetEaseMusicViewModel = viewModel
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = HomeScreen.Home.route) {
         composable(HomeScreen.Home.route) {
-            Home(user, musicViewModel, onToPlayList = {
-                navController.navigate(HomeScreen.PlayList.route)
+            Home(user, musicViewModel, onToScreen = {
+                navController.navigate(it.route)
             })
+        }
+        composable(HomeScreen.DailySong.route) {
+            Text(text = "每日推荐")
+        }
+        composable(HomeScreen.TopList.route) {
+            Text(text = "排行榜")
+        }
+        composable(HomeScreen.PlayList.ROUTE) {
+            Text(text = "播放列表")
         }
     }
 }
@@ -54,23 +62,24 @@ fun MusicHomePage(user: User?, musicViewModel: NetEaseMusicViewModel = viewModel
 private fun Home(
     user: User?,
     vm: NetEaseMusicViewModel? = null,
-    onToPlayList: ((Recommend) -> Unit)? = null
+    onToScreen: ((HomeScreen) -> Unit)? = null
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(color = Color.White)
     ) {
-        val recommendList by vm?.recommendList?.collectAsState() ?: return
+        val discoveryViewData by vm?.discoveryData?.collectAsState() ?: return
         LaunchedEffect(key1 = true, block = {
-            vm?.loadRecommendList()
+            vm?.loadDiscoveryPage()
         })
         Row(
             Modifier
-                .fillMaxHeight(0.16f)
+                .fillMaxHeight(0.12f)
                 .fillMaxWidth()
                 .background(color = MaterialTheme.colors.primary)
-                .padding(8.dp), verticalAlignment = Alignment.CenterVertically
+                .padding(10.dp), verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Image(
                 painter = rememberImagePainter(user?.profile?.avatarUrl.orEmpty(),
@@ -80,14 +89,13 @@ private fun Home(
             )
             Column {
                 Text(text = user?.profile?.nickname.orEmpty(), style = MaterialTheme.typography.h5)
-                Text(
-                    text = user?.profile?.signature.orEmpty(),
-                    style = MaterialTheme.typography.caption
-                )
+            }
+            IconButton(onClick = { /*TODO*/ }, modifier = Modifier.size(30.dp, 30.dp)) {
+                Icon(Icons.Default.Search, contentDescription = null, tint = Color.White)
             }
         }
         val pages: List<Pair<String, @Composable () -> Unit>> = listOf(
-            "发现" to { Discovery(recommendList, onToPlayList = onToPlayList) },
+            "发现" to { Discovery(discoveryViewData, onToScreen = onToScreen) },
             "我的" to { My() },
             "动态" to { NewAction() }
         )
@@ -106,10 +114,15 @@ private fun Home(
     }
 }
 
-private sealed class HomeScreen(val route: String) {
+internal sealed class HomeScreen(val route: String) {
     object Home : HomeScreen("home")
     object DailySong : HomeScreen("dailySong")
-    object PlayList : HomeScreen("playList")
+    object TopList : HomeScreen("topList")
+    class PlayList(val recommend: Recommend) : HomeScreen(ROUTE) {
+        companion object {
+            const val ROUTE: String = "playList"
+        }
+    }
 }
 
 @Composable

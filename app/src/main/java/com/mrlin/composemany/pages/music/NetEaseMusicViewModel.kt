@@ -3,10 +3,11 @@ package com.mrlin.composemany.pages.music
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mrlin.composemany.CookieStore
 import com.mrlin.composemany.MusicSettings
 import com.mrlin.composemany.repository.NetEaseMusicApi
 import com.mrlin.composemany.repository.db.MusicDatabase
+import com.mrlin.composemany.repository.entity.Album
+import com.mrlin.composemany.repository.entity.MVData
 import com.mrlin.composemany.repository.entity.Recommend
 import com.mrlin.composemany.repository.entity.User
 import com.mrlin.composemany.state.ViewState
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import retrofit2.await
 import retrofit2.awaitResponse
 import javax.inject.Inject
 
@@ -30,13 +32,15 @@ class NetEaseMusicViewModel @Inject constructor(
     private val musicDb: MusicDatabase,
     private val musicSettings: DataStore<MusicSettings>
 ) : ViewModel() {
-    private val _userState: MutableStateFlow<MusicHomeState> = MutableStateFlow(MusicHomeState.Visitor)
+    private val _userState: MutableStateFlow<MusicHomeState> =
+        MutableStateFlow(MusicHomeState.Visitor)
     private val _viewState: MutableStateFlow<ViewState> = MutableStateFlow(ViewState.Normal)
-    private val _recommendList: MutableStateFlow<List<Recommend>> = MutableStateFlow(emptyList())
+    private val _discoveryData: MutableStateFlow<DiscoveryViewData> =
+        MutableStateFlow(DiscoveryViewData())
 
     val userState: StateFlow<MusicHomeState> = _userState
     val viewState: StateFlow<ViewState> = _viewState
-    val recommendList: StateFlow<List<Recommend>> = _recommendList
+    val discoveryData: StateFlow<DiscoveryViewData> = _discoveryData
 
     init {
         doBusyWork {
@@ -57,7 +61,8 @@ class NetEaseMusicViewModel @Inject constructor(
      * 登录
      */
     fun login(phone: String, password: String) = doBusyWork {
-        val user = netEaseMusicApi.cellphoneLogin(phone, password).awaitResponse().takeIf { it.isSuccessful }?.body()
+        val user = netEaseMusicApi.cellphoneLogin(phone, password).awaitResponse()
+            .takeIf { it.isSuccessful }?.body()
         user?.takeIf { it.isValid() }?.run {
             //保存已登录用户
             user.accountId = user.account.id
@@ -67,9 +72,27 @@ class NetEaseMusicViewModel @Inject constructor(
         } ?: throw Throwable("登录失败")
     }
 
-    fun loadRecommendList() = doBusyWork {
-        val recommendData = netEaseMusicApi.recommendResource().awaitResponse().takeIf { it.isSuccessful }?.body()
-        _recommendList.tryEmit(recommendData?.recommend.orEmpty())
+    /**
+     * 发现页数据载入
+     */
+    fun loadDiscoveryPage() = doBusyWork {
+        val recommendDataCall = netEaseMusicApi.recommendResource()
+        val topAlbumDataCall = netEaseMusicApi.topAlbums()
+        val mvListCall = netEaseMusicApi.topMVs()
+        _discoveryData.tryEmit(DiscoveryViewData().apply {
+            try {
+                recommendList = recommendDataCall.await().recommend
+            } catch (_: Throwable) {
+            }
+            try {
+                newAlbumList = topAlbumDataCall.await().weekData.orEmpty()
+            } catch (_: Throwable) {
+            }
+            try {
+                topMVList = mvListCall.await().data.orEmpty()
+            } catch (_: Throwable) {
+            }
+        })
     }
 
     /**
@@ -87,13 +110,18 @@ class NetEaseMusicViewModel @Inject constructor(
     }
 }
 
+/**
+ * 发现页数据
+ */
+class DiscoveryViewData {
+    var recommendList: List<Recommend> = emptyList()
+    var newAlbumList: List<Album> = emptyList()
+    var topMVList: List<MVData.MV> = emptyList()
+}
 
-
-/*********************************
+/**
  * 音乐主页状态
- * @author mrlin
- * 创建于 2021年08月19日
- ******************************** */
+ */
 sealed class MusicHomeState {
     object Visitor : MusicHomeState()
     class Login(val user: User? = null) : MusicHomeState()
