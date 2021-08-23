@@ -1,4 +1,4 @@
-package com.mrlin.composemany.pages.music
+package com.mrlin.composemany.pages.music.login
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -12,6 +12,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mrlin.composemany.pages.music.NetEaseMusicViewModel
 
 /*********************************
  * 音乐登录界面

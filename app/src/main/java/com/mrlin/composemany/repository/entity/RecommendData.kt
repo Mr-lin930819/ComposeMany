@@ -30,13 +30,13 @@ data class Recommend(
 
 @Parcelize
 data class Creator(
-    val remarkName: String,
+    val remarkName: String? = null,
     val mutual: Boolean,
     val avatarImgId: Long,
     val backgroundImgId: Long,
     val detailDescription: String,
     val defaultAvatar: Boolean,
-    val expertTags: List<String>,
+    val expertTags: List<String>? = null,
     val djStatus: Int,
     val followed: Boolean,
     val backgroundUrl: String,

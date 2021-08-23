@@ -4,8 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Text
@@ -27,20 +25,21 @@ import androidx.navigation.fragment.navArgs
 import kotlin.math.roundToInt
 
 /*********************************
- *
+ * 音乐播放列表
  * @author mrlin
  * 创建于 2021年08月23日
  ******************************** */
 class MusicPlayListFragment : Fragment() {
-    val args: MusicPlayListFragmentArgs by navArgs()
+    private val args: MusicPlayListFragmentArgs by navArgs()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
-        ComposeView(requireContext()).apply {
-            setContent {
-                val recommend = args.recommend
-                PlayListAppBar()
-            }
-        }
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View = composeContent {
+        val recommend = args.recommend
+        PlayListAppBar()
+    }
 }
 
 @Composable
