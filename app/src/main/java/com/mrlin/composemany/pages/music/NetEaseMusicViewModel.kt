@@ -6,10 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.mrlin.composemany.MusicSettings
 import com.mrlin.composemany.repository.NetEaseMusicApi
 import com.mrlin.composemany.repository.db.MusicDatabase
-import com.mrlin.composemany.repository.entity.Album
-import com.mrlin.composemany.repository.entity.MVData
-import com.mrlin.composemany.repository.entity.Recommend
-import com.mrlin.composemany.repository.entity.User
+import com.mrlin.composemany.repository.entity.*
 import com.mrlin.composemany.state.ViewState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -76,18 +73,24 @@ class NetEaseMusicViewModel @Inject constructor(
      * 发现页数据载入
      */
     fun loadDiscoveryPage() = doBusyWork {
+        val bannerCall = netEaseMusicApi.banners()
         val recommendDataCall = netEaseMusicApi.recommendResource()
         val topAlbumDataCall = netEaseMusicApi.topAlbums()
         val mvListCall = netEaseMusicApi.topMVs()
         _discoveryData.tryEmit(DiscoveryViewData().apply {
             try {
-                recommendList = recommendDataCall.await().recommend
+                bannerList = bannerCall.await().banners.orEmpty()
             } catch (_: Throwable) {
             }
             try {
-                newAlbumList = topAlbumDataCall.await().weekData.orEmpty()
+                recommendList = recommendDataCall.await().recommend
             } catch (_: Throwable) {
             }
+            //新碟接口由于目前API的limit无效（无法分页返回了所有的月数据）导致数据量过大，因此暂时不使用
+//            try {
+//                newAlbumList = topAlbumDataCall.await().weekData.orEmpty()
+//            } catch (_: Throwable) {
+//            }
             try {
                 topMVList = mvListCall.await().data.orEmpty()
             } catch (_: Throwable) {
@@ -114,6 +117,7 @@ class NetEaseMusicViewModel @Inject constructor(
  * 发现页数据
  */
 class DiscoveryViewData {
+    var bannerList: List<BannerData.Banner> = emptyList()
     var recommendList: List<Recommend> = emptyList()
     var newAlbumList: List<Album> = emptyList()
     var topMVList: List<MVData.MV> = emptyList()

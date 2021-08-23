@@ -18,6 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.mrlin.composemany.R
 import com.mrlin.composemany.pages.music.DiscoveryViewData
+import com.mrlin.composemany.pages.music.widgets.CustomBanner
 import com.mrlin.composemany.pages.music.widgets.PlayListWidget
 import com.mrlin.composemany.repository.entity.Album
 import com.mrlin.composemany.repository.entity.MVData
@@ -32,6 +33,9 @@ internal fun Discovery(
     onToScreen: ((HomeScreen) -> Unit)? = null
 ) {
     Column {
+        CustomBanner(urls = discoveryViewData.bannerList.map { it.pic.orEmpty() }, height = 140) {
+
+        }
         CategoryList { menuName ->
             when (menuName) {
                 "每日推荐" -> onToScreen?.invoke(HomeScreen.DailySong)
@@ -40,21 +44,19 @@ internal fun Discovery(
         }
         Column(Modifier.verticalScroll(rememberScrollState())) {
             Text(text = "推荐歌单", modifier = Modifier.padding(10.dp))
-            Box(
-                modifier = Modifier.height(200.dp)
-            ) {
+            Box(modifier = Modifier.height(200.dp)) {
                 RecommendPlayList(discoveryViewData.recommendList) {
                     onToScreen?.invoke(HomeScreen.PlayList(it))
                 }
             }
-            Text(text = "新碟上架", modifier = Modifier.padding(10.dp))
-            Box(
-                modifier = Modifier.height(200.dp)
-            ) { NewAlbumList(discoveryViewData.newAlbumList) }
-            Text(text = "MV 排行", modifier = Modifier.padding(10.dp))
-            Box(
-                modifier = Modifier.height(200.dp)
-            ) { TopMvList(discoveryViewData.topMVList) }
+            discoveryViewData.newAlbumList.takeIf { it.isNotEmpty() }?.let {
+                Text(text = "新碟上架", modifier = Modifier.padding(10.dp))
+                Box(modifier = Modifier.height(200.dp)) { NewAlbumList(it) }
+            }
+            discoveryViewData.topMVList.takeIf { it.isNotEmpty() }?.let {
+                Text(text = "MV 排行", modifier = Modifier.padding(10.dp))
+                Box(modifier = Modifier.height(200.dp)) { TopMvList(it) }
+            }
         }
     }
 }
@@ -152,12 +154,12 @@ private fun NewAlbumList(albumList: List<Album>) {
  * MV 排行
  */
 @Composable
-private fun TopMvList(albumList: List<MVData.MV>) {
+private fun TopMvList(mvList: List<MVData.MV>) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(20.dp),
         contentPadding = PaddingValues(10.dp)
     ) {
-        items(albumList) {
+        items(mvList) {
             PlayListWidget(
                 text = it.name.orEmpty(), picUrl = it.cover.orEmpty(),
                 subText = it.artistName.orEmpty(), maxLines = 2

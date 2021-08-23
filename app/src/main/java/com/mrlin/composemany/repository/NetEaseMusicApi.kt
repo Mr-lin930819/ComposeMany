@@ -1,9 +1,6 @@
 package com.mrlin.composemany.repository
 
-import com.mrlin.composemany.repository.entity.AlbumData
-import com.mrlin.composemany.repository.entity.MVData
-import com.mrlin.composemany.repository.entity.RecommendData
-import com.mrlin.composemany.repository.entity.User
+import com.mrlin.composemany.repository.entity.*
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -49,4 +46,10 @@ interface NetEaseMusicApi {
         @Query("limit") limit: Int = 5,
         @Query("offset") offset: Int = 0
     ): Call<MVData>
+
+    /**
+     * banner数据
+     */
+    @GET("/banner")
+    fun banners(@Query("type") type: Int = BannerData.TYPE_ANDROID): Call<BannerData>
 }
