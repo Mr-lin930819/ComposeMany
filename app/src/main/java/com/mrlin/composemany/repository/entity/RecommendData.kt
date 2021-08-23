@@ -1,5 +1,8 @@
 package com.mrlin.composemany.repository.entity
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
 /**
  * 推荐歌单
  */
@@ -10,6 +13,7 @@ data class RecommendData(
     val recommend: List<Recommend>,
 )
 
+@Parcelize
 data class Recommend(
     val id: Long = 0,
     val type: Int = 0,
@@ -22,8 +26,9 @@ data class Recommend(
     val trackCount: Int? = null,
     val userId: Long = 0,
     val alg: String? = null,
-)
+) : Parcelable
 
+@Parcelize
 data class Creator(
     val remarkName: String,
     val mutual: Boolean,
@@ -51,4 +56,4 @@ data class Creator(
     val description: String,
     val signature: String,
     val authority: Int,
-)
+) : Parcelable

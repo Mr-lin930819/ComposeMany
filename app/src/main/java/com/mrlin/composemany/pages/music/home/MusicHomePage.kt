@@ -10,7 +10,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -22,10 +21,10 @@ import coil.transform.CircleCropTransformation
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
+import com.mrlin.composemany.pages.music.MusicScreen
 import com.mrlin.composemany.pages.music.NetEaseMusicViewModel
 import com.mrlin.composemany.repository.entity.Account
 import com.mrlin.composemany.repository.entity.Profile
-import com.mrlin.composemany.repository.entity.Recommend
 import com.mrlin.composemany.repository.entity.User
 import com.mrlin.composemany.ui.theme.ComposeManyTheme
 import kotlinx.coroutines.launch
@@ -37,12 +36,20 @@ import java.util.*
  * 创建于 2021年08月20日
  ******************************** */
 @Composable
-fun MusicHomePage(user: User?, musicViewModel: NetEaseMusicViewModel = viewModel()) {
+fun MusicHomePage(
+    user: User?, musicViewModel: NetEaseMusicViewModel = viewModel(), onToScreen: ((MusicScreen) -> Unit)? = null
+) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = HomeScreen.Home.route) {
         composable(HomeScreen.Home.route) {
             Home(user, musicViewModel, onToScreen = {
-                navController.navigate(it.route)
+                if (it is HomeScreen) {
+                    navController.navigate(it.route)
+                } else if (it is MusicScreen) {
+                    // compose的Navigation【当前2.4.0-alpha06】暂不支持复杂类型
+                    // 带复杂参数的页面跳转需要改用Activity或Fragment级别的Navigator
+                    onToScreen?.invoke(it)
+                }
             })
         }
         composable(HomeScreen.DailySong.route) {
@@ -50,9 +57,6 @@ fun MusicHomePage(user: User?, musicViewModel: NetEaseMusicViewModel = viewModel
         }
         composable(HomeScreen.TopList.route) {
             Text(text = "排行榜")
-        }
-        composable(HomeScreen.PlayList.ROUTE) {
-            Text(text = "播放列表")
         }
     }
 }
@@ -62,7 +66,7 @@ fun MusicHomePage(user: User?, musicViewModel: NetEaseMusicViewModel = viewModel
 private fun Home(
     user: User?,
     vm: NetEaseMusicViewModel? = null,
-    onToScreen: ((HomeScreen) -> Unit)? = null
+    onToScreen: ((Any) -> Unit)? = null
 ) {
     Column(
         modifier = Modifier
@@ -114,15 +118,10 @@ private fun Home(
     }
 }
 
-internal sealed class HomeScreen(val route: String) {
+internal sealed class HomeScreen(open val route: String) {
     object Home : HomeScreen("home")
     object DailySong : HomeScreen("dailySong")
     object TopList : HomeScreen("topList")
-    class PlayList(val recommend: Recommend) : HomeScreen(ROUTE) {
-        companion object {
-            const val ROUTE: String = "playList"
-        }
-    }
 }
 
 @Composable

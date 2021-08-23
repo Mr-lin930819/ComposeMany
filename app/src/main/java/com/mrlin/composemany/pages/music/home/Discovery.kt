@@ -18,6 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.mrlin.composemany.R
 import com.mrlin.composemany.pages.music.DiscoveryViewData
+import com.mrlin.composemany.pages.music.MusicScreen
 import com.mrlin.composemany.pages.music.widgets.CustomBanner
 import com.mrlin.composemany.pages.music.widgets.PlayListWidget
 import com.mrlin.composemany.repository.entity.Album
@@ -30,7 +31,7 @@ import com.mrlin.composemany.repository.entity.Recommend
 @Composable
 internal fun Discovery(
     discoveryViewData: DiscoveryViewData,
-    onToScreen: ((HomeScreen) -> Unit)? = null
+    onToScreen: ((Any) -> Unit)? = null
 ) {
     Column {
         CustomBanner(urls = discoveryViewData.bannerList.map { it.pic.orEmpty() }, height = 140) {
@@ -46,7 +47,7 @@ internal fun Discovery(
             Text(text = "推荐歌单", modifier = Modifier.padding(10.dp))
             Box(modifier = Modifier.height(200.dp)) {
                 RecommendPlayList(discoveryViewData.recommendList) {
-                    onToScreen?.invoke(HomeScreen.PlayList(it))
+                    onToScreen?.invoke(MusicScreen.PlayList(it))
                 }
             }
             discoveryViewData.newAlbumList.takeIf { it.isNotEmpty() }?.let {

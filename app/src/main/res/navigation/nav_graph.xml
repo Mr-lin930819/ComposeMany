@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/netEaseMusicHomeFragment">
+    <fragment
+        android:id="@+id/netEaseMusicHomeFragment"
+        android:name="com.mrlin.composemany.pages.music.NetEaseMusicHomeFragment"
+        android:label="NetEaseMusicHomeFragment" />
+    <fragment
+        android:id="@+id/musicPlayListFragment"
+        android:name="com.mrlin.composemany.pages.music.MusicPlayListFragment"
+        android:label="MusicPlayListFragment">
+        <argument
+            android:name="recommend"
+            app:argType="com.mrlin.composemany.repository.entity.Recommend" />
+    </fragment>
+
+    <action
+        android:id="@+id/toMusicPlayListFragment"
+        app:destination="@id/musicPlayListFragment" />
+</navigation>
