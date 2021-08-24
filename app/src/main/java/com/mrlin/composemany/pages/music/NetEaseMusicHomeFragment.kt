@@ -9,21 +9,22 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.text.TextStyle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.whenStarted
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.fragment.findNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.mrlin.composemany.R
 import com.mrlin.composemany.pages.music.home.MusicHomePage
 import com.mrlin.composemany.pages.music.login.MusicLoginPage
 import com.mrlin.composemany.state.ViewState
@@ -50,15 +51,37 @@ class NetEaseMusicHomeFragment : Fragment() {
                 color = Blue500
             )
         }
+        val navController = rememberNavController()
         ComposeManyTheme {
-            val userState by netEaseMusicViewModel.userState.collectAsState()
-            val viewState by netEaseMusicViewModel.viewState.collectAsState()
-            when (userState) {
-                is MusicHomeState.Visitor -> MusicLoginPage(netEaseMusicViewModel)
-                is MusicHomeState.Login -> MusicHomePage((userState as MusicHomeState.Login).user) {
-                    findNavController().navigate(it.directions)
+            var navAlpha by remember { mutableStateOf(0f) }
+            LaunchedEffect(key1 = true, block = {
+                lifecycle.whenStarted { navAlpha = 1.0f }
+            })
+            NavHost(
+                navController = navController,
+                startDestination = HomeScreen.Home.route,
+                modifier = Modifier.alpha(navAlpha)
+            ) {
+                composable(HomeScreen.Home.route) {
+                    val userState by netEaseMusicViewModel.userState.collectAsState()
+                    when (userState) {
+                        is MusicHomeState.Visitor -> MusicLoginPage(netEaseMusicViewModel)
+                        is MusicHomeState.Login -> MusicHomePage((userState as MusicHomeState.Login).user) {
+                            when (it) {
+                                is MusicScreen -> findNavController().navigate(it.directions)
+                                is HomeScreen -> navController.navigate(it.route)
+                            }
+                        }
+                    }
+                }
+                composable(HomeScreen.DailySong.route) {
+                    Text(text = "每日推荐")
+                }
+                composable(HomeScreen.TopList.route) {
+                    Text(text = "排行榜")
                 }
             }
+            val viewState by netEaseMusicViewModel.viewState.collectAsState()
             if (viewState is ViewState.Busy) {
                 Loading()
             } else if (viewState is ViewState.Error) {
@@ -68,9 +91,14 @@ class NetEaseMusicHomeFragment : Fragment() {
     }
 }
 
+internal sealed class HomeScreen(open val route: String) {
+    object Home : HomeScreen("home")
+    object DailySong : HomeScreen("dailySong")
+    object TopList : HomeScreen("topList")
+}
+
 internal fun Fragment.composeContent(content: @Composable () -> Unit): View =
     ComposeView(requireContext()).apply {
-        id = R.id.chain
         setViewCompositionStrategy(
             ViewCompositionStrategy.DisposeOnLifecycleDestroyed(viewLifecycleOwner)
         )

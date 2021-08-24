@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import retrofit2.await
 import retrofit2.awaitResponse
+import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
 /*********************************
@@ -32,6 +33,7 @@ class NetEaseMusicViewModel @Inject constructor(
     private val _userState: MutableStateFlow<MusicHomeState> =
         MutableStateFlow(MusicHomeState.Visitor)
     private val _viewState: MutableStateFlow<ViewState> = MutableStateFlow(ViewState.Normal)
+    private var busyCount = 0
     private val _discoveryData: MutableStateFlow<DiscoveryViewData> =
         MutableStateFlow(DiscoveryViewData())
 
@@ -102,10 +104,13 @@ class NetEaseMusicViewModel @Inject constructor(
      * 进行繁忙任务
      */
     private fun doBusyWork(work: suspend CoroutineScope.() -> Unit) = viewModelScope.launch {
+        busyCount++
         _viewState.emit(ViewState.Busy())
         try {
             work()
-            _viewState.tryEmit(ViewState.Normal)
+            if (--busyCount <= 0) {
+                _viewState.tryEmit(ViewState.Normal)
+            }
         } catch (t: Throwable) {
             _viewState.tryEmit(ViewState.Error(t.message.orEmpty()))
             t.printStackTrace()

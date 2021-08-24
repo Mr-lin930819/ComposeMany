@@ -12,16 +12,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberImagePainter
 import coil.transform.CircleCropTransformation
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
-import com.mrlin.composemany.pages.music.MusicScreen
 import com.mrlin.composemany.pages.music.NetEaseMusicViewModel
 import com.mrlin.composemany.repository.entity.Account
 import com.mrlin.composemany.repository.entity.Profile
@@ -37,28 +33,9 @@ import java.util.*
  ******************************** */
 @Composable
 fun MusicHomePage(
-    user: User?, musicViewModel: NetEaseMusicViewModel = viewModel(), onToScreen: ((MusicScreen) -> Unit)? = null
+    user: User?, musicViewModel: NetEaseMusicViewModel = hiltViewModel(), onToScreen: ((Any) -> Unit)? = null
 ) {
-    val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = HomeScreen.Home.route) {
-        composable(HomeScreen.Home.route) {
-            Home(user, musicViewModel, onToScreen = {
-                if (it is HomeScreen) {
-                    navController.navigate(it.route)
-                } else if (it is MusicScreen) {
-                    // compose的Navigation【当前2.4.0-alpha06】暂不支持复杂类型
-                    // 带复杂参数的页面跳转需要改用Activity或Fragment级别的Navigator
-                    onToScreen?.invoke(it)
-                }
-            })
-        }
-        composable(HomeScreen.DailySong.route) {
-            Text(text = "每日推荐")
-        }
-        composable(HomeScreen.TopList.route) {
-            Text(text = "排行榜")
-        }
-    }
+    Home(user, musicViewModel, onToScreen = onToScreen)
 }
 
 @Composable
@@ -116,12 +93,6 @@ private fun Home(
             state = pagerState, verticalAlignment = Alignment.Top
         ) { page -> pages[page].second() }
     }
-}
-
-internal sealed class HomeScreen(open val route: String) {
-    object Home : HomeScreen("home")
-    object DailySong : HomeScreen("dailySong")
-    object TopList : HomeScreen("topList")
 }
 
 @Composable

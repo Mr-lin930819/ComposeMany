@@ -18,6 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.mrlin.composemany.R
 import com.mrlin.composemany.pages.music.DiscoveryViewData
+import com.mrlin.composemany.pages.music.HomeScreen
 import com.mrlin.composemany.pages.music.MusicScreen
 import com.mrlin.composemany.pages.music.widgets.CustomBanner
 import com.mrlin.composemany.pages.music.widgets.PlayListWidget
