@@ -14,7 +14,7 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:theme="@style/Theme.ComposeMany.NoActionBar">
         <activity
-            android:name="com.mrlin.composemany.pages.music.NetEaseMusicSplashActivity"
+            android:name="com.mrlin.composemany.pages.music.MusicSplashActivity"
             android:exported="true"
             android:label="@string/title_activity_net_ease_music" />
         <activity

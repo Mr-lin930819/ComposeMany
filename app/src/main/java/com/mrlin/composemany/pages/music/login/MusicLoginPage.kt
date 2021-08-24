@@ -12,7 +12,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mrlin.composemany.pages.music.NetEaseMusicViewModel
+import com.mrlin.composemany.pages.music.MusicHomeViewModel
 
 /*********************************
  * 音乐登录界面
@@ -20,7 +20,7 @@ import com.mrlin.composemany.pages.music.NetEaseMusicViewModel
  * 创建于 2021年08月19日
  ******************************** */
 @Composable
-fun MusicLoginPage(vm: NetEaseMusicViewModel? = null) {
+fun MusicLoginPage(vm: MusicHomeViewModel? = null) {
     Scaffold(topBar = {
         TopAppBar(title = { Text(text = "手机号登录") })
     }) {

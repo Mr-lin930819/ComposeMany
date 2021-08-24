@@ -24,7 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.mrlin.composemany.pages.fund.FundActivity
-import com.mrlin.composemany.pages.music.NetEaseMusicSplashActivity
+import com.mrlin.composemany.pages.music.MusicSplashActivity
 import com.mrlin.composemany.ui.theme.Blue500
 import com.mrlin.composemany.ui.theme.ComposeManyTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
                         when (menu) {
                             is MainMenu.Fund -> startActivity(Intent(this, FundActivity::class.java))
                             is MainMenu.NetEaseMusic -> startActivity(
-                                Intent(this, NetEaseMusicSplashActivity::class.java)
+                                Intent(this, MusicSplashActivity::class.java)
                             )
                         }
                     })
@@ -108,7 +108,7 @@ private fun Greeting(
                         .clickable { onMenuClick?.invoke(it) },
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Image(painter = painterResource(id = R.drawable.discuss), contentDescription = "")
+                    Image(painter = painterResource(id = it.icon), contentDescription = "")
                     Text(text = it.name)
                 }
             }

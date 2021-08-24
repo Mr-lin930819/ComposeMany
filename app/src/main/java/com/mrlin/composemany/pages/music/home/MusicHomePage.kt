@@ -18,7 +18,7 @@ import coil.transform.CircleCropTransformation
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
-import com.mrlin.composemany.pages.music.NetEaseMusicViewModel
+import com.mrlin.composemany.pages.music.MusicHomeViewModel
 import com.mrlin.composemany.repository.entity.Account
 import com.mrlin.composemany.repository.entity.Profile
 import com.mrlin.composemany.repository.entity.User
@@ -33,16 +33,16 @@ import java.util.*
  ******************************** */
 @Composable
 fun MusicHomePage(
-    user: User?, musicViewModel: NetEaseMusicViewModel = hiltViewModel(), onToScreen: ((Any) -> Unit)? = null
+    user: User?, musicHomeViewModel: MusicHomeViewModel = hiltViewModel(), onToScreen: ((Any) -> Unit)? = null
 ) {
-    Home(user, musicViewModel, onToScreen = onToScreen)
+    Home(user, musicHomeViewModel, onToScreen = onToScreen)
 }
 
 @Composable
 @OptIn(ExperimentalPagerApi::class)
 private fun Home(
     user: User?,
-    vm: NetEaseMusicViewModel? = null,
+    vm: MusicHomeViewModel? = null,
     onToScreen: ((Any) -> Unit)? = null
 ) {
     Column(

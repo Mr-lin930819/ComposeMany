@@ -5,11 +5,11 @@
     app:startDestination="@id/netEaseMusicHomeFragment">
     <fragment
         android:id="@+id/netEaseMusicHomeFragment"
-        android:name="com.mrlin.composemany.pages.music.NetEaseMusicHomeFragment"
+        android:name="com.mrlin.composemany.pages.music.home.NetEaseMusicHomeFragment"
         android:label="NetEaseMusicHomeFragment" />
     <fragment
         android:id="@+id/musicPlayListFragment"
-        android:name="com.mrlin.composemany.pages.music.MusicPlayListFragment"
+        android:name="com.mrlin.composemany.pages.music.playlist.MusicPlayListFragment"
         android:label="MusicPlayListFragment">
         <argument
             android:name="recommend"

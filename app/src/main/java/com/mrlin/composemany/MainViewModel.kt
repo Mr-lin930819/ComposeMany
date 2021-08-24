@@ -1,5 +1,6 @@
 package com.mrlin.composemany
 
+import androidx.annotation.DrawableRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
@@ -29,7 +30,12 @@ class MainViewModel : ViewModel() {
     }
 }
 
-sealed class MainMenu(val name: String) {
-    class Fund : MainMenu("基金")
-    class NetEaseMusic : MainMenu("音乐")
+/**
+ * 菜单图标数据来源于：
+ * 1）[https://www.iconfont.cn/collections/detail?spm=a313x.7781069.1998910419.dc64b3430&cid=32207]
+ * 2）[https://www.iconfont.cn/collections/detail?spm=a313x.7781069.1998910419.dc64b3430&cid=16724]
+ */
+sealed class MainMenu(val name: String, @DrawableRes val icon: Int = R.drawable.discuss) {
+    class Fund : MainMenu("基金", R.drawable.discuss)
+    class NetEaseMusic : MainMenu("音乐", R.drawable.music)
 }

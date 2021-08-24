@@ -1,4 +1,4 @@
-package com.mrlin.composemany.pages.music
+package com.mrlin.composemany.pages.music.home
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -25,7 +25,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.fragment.findNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.mrlin.composemany.pages.music.home.MusicHomePage
+import com.mrlin.composemany.pages.music.MusicHomeState
+import com.mrlin.composemany.pages.music.MusicHomeViewModel
+import com.mrlin.composemany.pages.music.MusicScreen
 import com.mrlin.composemany.pages.music.login.MusicLoginPage
 import com.mrlin.composemany.state.ViewState
 import com.mrlin.composemany.ui.theme.Blue500
@@ -39,7 +41,7 @@ import dagger.hilt.android.AndroidEntryPoint
  ******************************** */
 @AndroidEntryPoint
 class NetEaseMusicHomeFragment : Fragment() {
-    private val netEaseMusicViewModel by viewModels<NetEaseMusicViewModel>()
+    private val viewModel by viewModels<MusicHomeViewModel>()
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -63,9 +65,9 @@ class NetEaseMusicHomeFragment : Fragment() {
                 modifier = Modifier.alpha(navAlpha)
             ) {
                 composable(HomeScreen.Home.route) {
-                    val userState by netEaseMusicViewModel.userState.collectAsState()
+                    val userState by viewModel.userState.collectAsState()
                     when (userState) {
-                        is MusicHomeState.Visitor -> MusicLoginPage(netEaseMusicViewModel)
+                        is MusicHomeState.Visitor -> MusicLoginPage(viewModel)
                         is MusicHomeState.Login -> MusicHomePage((userState as MusicHomeState.Login).user) {
                             when (it) {
                                 is MusicScreen -> findNavController().navigate(it.directions)
@@ -81,7 +83,7 @@ class NetEaseMusicHomeFragment : Fragment() {
                     Text(text = "排行榜")
                 }
             }
-            val viewState by netEaseMusicViewModel.viewState.collectAsState()
+            val viewState by viewModel.viewState.collectAsState()
             if (viewState is ViewState.Busy) {
                 Loading()
             } else if (viewState is ViewState.Error) {

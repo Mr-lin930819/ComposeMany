@@ -1,4 +1,4 @@
-package com.mrlin.composemany.pages.music
+package com.mrlin.composemany.pages.music.playlist
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -16,12 +16,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.navArgs
+import com.mrlin.composemany.pages.music.home.composeContent
 import kotlin.math.roundToInt
 
 /*********************************

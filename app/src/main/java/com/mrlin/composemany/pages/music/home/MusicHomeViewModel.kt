@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import retrofit2.await
 import retrofit2.awaitResponse
-import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
 /*********************************
@@ -25,7 +24,7 @@ import javax.inject.Inject
  * 创建于 2021年08月19日
  ******************************** */
 @HiltViewModel
-class NetEaseMusicViewModel @Inject constructor(
+class MusicHomeViewModel @Inject constructor(
     private val netEaseMusicApi: NetEaseMusicApi,
     private val musicDb: MusicDatabase,
     private val musicSettings: DataStore<MusicSettings>

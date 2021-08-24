@@ -26,7 +26,7 @@ import com.mrlin.composemany.ui.theme.Blue500
 import com.mrlin.composemany.ui.theme.ComposeManyTheme
 import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
-class NetEaseMusicSplashActivity : AppCompatActivity() {
+class MusicSplashActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
