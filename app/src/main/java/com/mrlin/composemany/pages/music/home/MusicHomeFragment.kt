@@ -68,7 +68,7 @@ class NetEaseMusicHomeFragment : Fragment() {
                     val userState by viewModel.userState.collectAsState()
                     when (userState) {
                         is MusicHomeState.Visitor -> MusicLoginPage(viewModel)
-                        is MusicHomeState.Login -> MusicHomePage((userState as MusicHomeState.Login).user) {
+                        is MusicHomeState.Login -> MusicHome((userState as MusicHomeState.Login).user) {
                             when (it) {
                                 is MusicScreen -> findNavController().navigate(it.directions)
                                 is HomeScreen -> navController.navigate(it.route)

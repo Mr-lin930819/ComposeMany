@@ -32,7 +32,7 @@ import java.util.*
  * 创建于 2021年08月20日
  ******************************** */
 @Composable
-fun MusicHomePage(
+fun MusicHome(
     user: User?, musicHomeViewModel: MusicHomeViewModel = hiltViewModel(), onToScreen: ((Any) -> Unit)? = null
 ) {
     Home(user, musicHomeViewModel, onToScreen = onToScreen)
