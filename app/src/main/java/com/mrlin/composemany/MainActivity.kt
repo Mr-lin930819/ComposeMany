@@ -2,9 +2,9 @@ package com.mrlin.composemany
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -15,18 +15,17 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.mrlin.composemany.pages.fund.FundActivity
 import com.mrlin.composemany.pages.music.NetEaseMusicSplashActivity
+import com.mrlin.composemany.ui.theme.Blue500
 import com.mrlin.composemany.ui.theme.ComposeManyTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,11 +33,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val systemUiController = rememberSystemUiController()
+            SideEffect {
+                systemUiController.setStatusBarColor(color = Blue500)
+                systemUiController.setNavigationBarColor(color = Color.Black)
+            }
             ComposeManyTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
@@ -46,7 +50,9 @@ class MainActivity : AppCompatActivity() {
                     Greeting("Android", viewModel.time, viewModel.menuList(), onMenuClick = { menu ->
                         when (menu) {
                             is MainMenu.Fund -> startActivity(Intent(this, FundActivity::class.java))
-                            is MainMenu.NetEaseMusic -> startActivity(Intent(this, NetEaseMusicSplashActivity::class.java))
+                            is MainMenu.NetEaseMusic -> startActivity(
+                                Intent(this, NetEaseMusicSplashActivity::class.java)
+                            )
                         }
                     })
                 }
