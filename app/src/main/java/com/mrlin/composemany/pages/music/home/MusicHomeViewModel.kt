@@ -1,19 +1,17 @@
-package com.mrlin.composemany.pages.music
+package com.mrlin.composemany.pages.music.home
 
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.mrlin.composemany.MusicSettings
 import com.mrlin.composemany.repository.NetEaseMusicApi
 import com.mrlin.composemany.repository.db.MusicDatabase
 import com.mrlin.composemany.repository.entity.*
 import com.mrlin.composemany.state.ViewState
+import com.mrlin.composemany.utils.busyWork
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.launch
 import retrofit2.await
 import retrofit2.awaitResponse
 import javax.inject.Inject
@@ -32,7 +30,6 @@ class MusicHomeViewModel @Inject constructor(
     private val _userState: MutableStateFlow<MusicHomeState> =
         MutableStateFlow(MusicHomeState.Splash)
     private val _viewState: MutableStateFlow<ViewState> = MutableStateFlow(ViewState.Normal)
-    private var busyCount = 0
     private val _discoveryData: MutableStateFlow<DiscoveryViewData> =
         MutableStateFlow(DiscoveryViewData())
 
@@ -41,13 +38,13 @@ class MusicHomeViewModel @Inject constructor(
     val discoveryData: StateFlow<DiscoveryViewData> = _discoveryData
 
     init {
-        doBusyWork {
+        busyWork(_viewState) {
             val userAccountId = musicSettings.data.firstOrNull()?.userAccountId
             if (userAccountId != null) {
                 //已登录用户，则直接进入已登录状态
                 musicDb.userDao().findUser(userAccountId.toLong())?.run {
                     _userState.emit(MusicHomeState.Login(user = this))
-                    return@doBusyWork
+                    return@busyWork ViewState.Normal
                 }
             }
             val response = netEaseMusicApi.refreshLogin().awaitResponse()
@@ -58,7 +55,7 @@ class MusicHomeViewModel @Inject constructor(
     /**
      * 登录
      */
-    fun login(phone: String, password: String) = doBusyWork {
+    fun login(phone: String, password: String) = busyWork(_viewState) {
         val user = netEaseMusicApi.cellphoneLogin(phone, password).awaitResponse()
             .takeIf { it.isSuccessful }?.body()
         user?.takeIf { it.isValid() }?.run {
@@ -73,7 +70,7 @@ class MusicHomeViewModel @Inject constructor(
     /**
      * 发现页数据载入
      */
-    fun loadDiscoveryPage() = doBusyWork {
+    fun loadDiscoveryPage() = busyWork(_viewState) {
         val bannerCall = netEaseMusicApi.banners()
         val recommendDataCall = netEaseMusicApi.recommendResource()
         val topAlbumDataCall = netEaseMusicApi.topAlbums()
@@ -97,23 +94,6 @@ class MusicHomeViewModel @Inject constructor(
             } catch (_: Throwable) {
             }
         })
-    }
-
-    /**
-     * 进行繁忙任务
-     */
-    private fun doBusyWork(work: suspend CoroutineScope.() -> Unit) = viewModelScope.launch {
-        busyCount++
-        _viewState.emit(ViewState.Busy())
-        try {
-            work()
-            if (--busyCount <= 0) {
-                _viewState.tryEmit(ViewState.Normal)
-            }
-        } catch (t: Throwable) {
-            _viewState.tryEmit(ViewState.Error(t.message.orEmpty()))
-            t.printStackTrace()
-        }
     }
 }
 

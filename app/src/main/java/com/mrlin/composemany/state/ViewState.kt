@@ -5,10 +5,10 @@ package com.mrlin.composemany.state
  * @author mrlin
  * 创建于 2021年08月19日
  ******************************** */
-sealed class ViewState {
+abstract class ViewState {
     object Normal : ViewState()
 
-    class Busy(message: String? = null) : ViewState()
+    class Busy(val message: String? = null) : ViewState()
 
     class Error(val reason: String) : ViewState()
 }

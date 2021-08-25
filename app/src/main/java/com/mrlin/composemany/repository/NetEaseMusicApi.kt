@@ -52,4 +52,10 @@ interface NetEaseMusicApi {
      */
     @GET("/banner")
     fun banners(@Query("type") type: Int = BannerData.TYPE_ANDROID): Call<BannerData>
+
+    /**
+     * 播放列表详情
+     */
+    @GET("/playlist/detail")
+    fun playListDetail(@Query("id") id: Long) : Call<PlayListData>
 }

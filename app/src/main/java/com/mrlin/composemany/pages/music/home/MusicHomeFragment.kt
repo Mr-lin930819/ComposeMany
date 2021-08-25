@@ -31,8 +31,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.fragment.findNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.mrlin.composemany.R
-import com.mrlin.composemany.pages.music.MusicHomeState
-import com.mrlin.composemany.pages.music.MusicHomeViewModel
 import com.mrlin.composemany.pages.music.MusicScreen
 import com.mrlin.composemany.pages.music.login.MusicLogin
 import com.mrlin.composemany.state.ViewState
@@ -92,11 +90,9 @@ class NetEaseMusicHomeFragment : Fragment() {
                     Text(text = "排行榜")
                 }
             }
-            val viewState by viewModel.viewState.collectAsState()
-            if (viewState is ViewState.Busy) {
-                Loading()
-            } else if (viewState is ViewState.Error) {
-                FailureTip(reason = (viewState as ViewState.Error).reason)
+            when (val state = viewModel.viewState.collectAsState().value) {
+                is ViewState.Busy -> Loading()
+                is ViewState.Error -> FailureTip(reason = state.reason)
             }
         }
     }

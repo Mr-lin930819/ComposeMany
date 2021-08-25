@@ -18,7 +18,6 @@ import coil.transform.CircleCropTransformation
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
-import com.mrlin.composemany.pages.music.MusicHomeViewModel
 import com.mrlin.composemany.repository.entity.Account
 import com.mrlin.composemany.repository.entity.Profile
 import com.mrlin.composemany.repository.entity.User

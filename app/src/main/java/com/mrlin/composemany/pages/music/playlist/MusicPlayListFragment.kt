@@ -8,15 +8,11 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.PlayArrow
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -31,24 +27,36 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.navigation.fragment.navArgs
 import coil.compose.rememberImagePainter
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import coil.transform.BlurTransformation
+import coil.transform.RoundedCornersTransformation
+import com.mrlin.composemany.pages.music.PlaySongsViewModel
 import com.mrlin.composemany.pages.music.home.composeContent
 import com.mrlin.composemany.pages.music.widgets.PlayListCover
-import com.mrlin.composemany.repository.entity.limitSize
+import com.mrlin.composemany.pages.music.widgets.PlayWidget
+import com.mrlin.composemany.repository.entity.*
+import com.mrlin.composemany.state.ViewState
 import com.mrlin.composemany.ui.theme.ComposeManyTheme
+import dagger.hilt.android.AndroidEntryPoint
 
 /*********************************
  * 音乐播放列表
  * @author mrlin
  * 创建于 2021年08月23日
  ******************************** */
+@AndroidEntryPoint
 class MusicPlayListFragment : Fragment() {
     private val args: MusicPlayListFragmentArgs by navArgs()
+    private val viewModel by viewModels<MusicPlayListViewModel>()
+    private val playSongsViewModel by activityViewModels<PlaySongsViewModel>()
 
+    @Suppress("UnnecessaryVariable")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -57,6 +65,7 @@ class MusicPlayListFragment : Fragment() {
         ComposeManyTheme {
             val recommend = args.recommend
             val context = LocalContext.current
+            val playList by viewModel.playList.collectAsState()
             PlayListAppBar(recommend.name, expandedHeight = 320.dp, background = {
                 Image(
                     painter = rememberImagePainter(
@@ -66,14 +75,20 @@ class MusicPlayListFragment : Fragment() {
                             .transformations(BlurTransformation(context, radius = 20f))
                             .build()
                     ),
-                    contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
                 )
                 Row(
                     modifier = Modifier
                         .align(Alignment.Center)
                         .padding(8.dp)
                 ) {
-                    PlayListCover(url = recommend.picUrl, width = 160f, playCount = recommend.playcount)
+                    PlayListCover(
+                        url = recommend.picUrl,
+                        width = 160f,
+                        playCount = recommend.playcount
+                    )
                     Column(
                         Modifier
                             .padding(start = 10.dp)
@@ -82,7 +97,11 @@ class MusicPlayListFragment : Fragment() {
                         Text(text = recommend.name, maxLines = 2)
                         Row {
                             Image(
-                                painter = rememberImagePainter(recommend.creator?.avatarUrl?.limitSize(50).orEmpty()),
+                                painter = rememberImagePainter(
+                                    recommend.creator?.avatarUrl?.limitSize(
+                                        50
+                                    ).orEmpty()
+                                ),
                                 contentDescription = null,
                             )
                             Text(text = recommend.creator?.nickname.orEmpty())
@@ -91,9 +110,84 @@ class MusicPlayListFragment : Fragment() {
                 }
             }, bottom = {
                 MusicListHeader {
-
+                    Result
                 }
-            })
+            }) {
+                Column {
+                    Box(modifier = Modifier.weight(1.0f)) {
+                        SongsList(playList = playList, playSongsViewModel = playSongsViewModel)
+                    }
+                    PlayWidget(viewModel = playSongsViewModel)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SongsList(playList: ViewState, playSongsViewModel: PlaySongsViewModel) {
+    when (playList) {
+        is ViewState.Busy -> CircularProgressIndicator()
+        is MusicPlayListViewModel.PlayListState ->
+            LazyColumn {
+                itemsIndexed(playList.data.tracks) { index, track ->
+                    MusicListItem(
+                        MusicData(
+                            track.mv, index = index + 1, songName = track.name,
+                            artists = "${
+                                track.ar.joinToString("/") { it.name }
+                            } - ${track.al.name}"
+                        )
+                    ) {
+                        playSongsViewModel.playSongs(playList.data.tracks
+                            .map {
+                                Song(
+                                    it.id,
+                                    it.name,
+                                    it.artists(),
+                                    UString(it.al.picUrl.orEmpty())
+                                )
+                            }, index
+                        )
+                    }
+                }
+            }
+        is ViewState.Error -> Text(text = playList.reason)
+    }
+}
+
+@Composable
+private fun MusicListItem(musicData: MusicData, onTap: (() -> Unit)? = null) {
+    Row(
+        modifier = Modifier
+            .height(80.dp)
+            .fillMaxWidth()
+            .clickable(onTap != null) { onTap?.invoke() },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        musicData.picUrl?.let {
+            Image(
+                painter = rememberImagePainter(
+                    it.limitSize(100),
+                    builder = {
+                        transformations(RoundedCornersTransformation(5f))
+                        diskCachePolicy(CachePolicy.DISABLED)
+                    }
+                ),
+                contentDescription = null,
+            )
+        }
+        musicData.index?.let {
+            Text(
+                text = it.toString(),
+                modifier = Modifier.width(40.dp),
+                textAlign = TextAlign.Center
+            )
+        }
+        Column {
+            Text(text = musicData.songName, maxLines = 1)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = musicData.artists, maxLines = 1)
         }
     }
 }
@@ -105,7 +199,8 @@ class MusicPlayListFragment : Fragment() {
 @Composable
 private fun PlayListAppBar(
     title: String, expandedHeight: Dp? = null, bottom: (@Composable () -> Unit)? = null,
-    background: (@Composable BoxScope.() -> Unit)? = null
+    background: (@Composable BoxScope.() -> Unit)? = null,
+    content: (@Composable () -> Unit)? = null,
 ) {
 // here we use LazyColumn that has build-in nested scroll, but we want to act like a
 // parent for this LazyColumn and participate in its nested scroll.
@@ -114,7 +209,8 @@ private fun PlayListAppBar(
     val toolbarHeightPx = with(LocalDensity.current) { toolbarHeight.roundToPx().toFloat() }
 // our offset to collapse toolbar
     val toolbarOffsetHeightPx = remember { mutableStateOf(0f) }
-    val expandedHeightPx = with(LocalDensity.current) { expandedHeight?.roundToPx()?.toFloat() ?: toolbarHeightPx }
+    val expandedHeightPx =
+        with(LocalDensity.current) { expandedHeight?.roundToPx()?.toFloat() ?: toolbarHeightPx }
     val toolbarExpandedHeightPx = remember { mutableStateOf(expandedHeightPx) }
 // now, let's create connection to the nested scroll system and listen to the scroll
 // happening inside child LazyColumn
@@ -125,7 +221,8 @@ private fun PlayListAppBar(
                 val delta = available.y
                 val newOffset = toolbarOffsetHeightPx.value + delta
                 val newExpendedHeight = toolbarExpandedHeightPx.value + delta
-                toolbarExpandedHeightPx.value = newExpendedHeight.coerceIn(toolbarHeightPx, expandedHeightPx)
+                toolbarExpandedHeightPx.value =
+                    newExpendedHeight.coerceIn(toolbarHeightPx, expandedHeightPx)
                 toolbarOffsetHeightPx.value = newOffset.coerceIn(-expandedHeightPx, 0f)
                 // here's the catch: let's pretend we consumed 0 in any case, since we want
                 // LazyColumn to scroll anyway for good UX
@@ -181,20 +278,16 @@ private fun PlayListAppBar(
             }
         }
         // our list with build in nested scroll support that will notify us about its scroll
-        LazyColumn() {
-            items(100) { index ->
-                Text(
-                    "I'm item $index", modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                )
-            }
-        }
+        content?.invoke()
     }
 }
 
 @Composable
-private fun MusicListHeader(count: Int? = null, onTap: (() -> Unit)? = null, tail: @Composable () -> Unit) {
+private fun MusicListHeader(
+    count: Int? = null,
+    onTap: (() -> Unit)? = null,
+    tail: @Composable () -> Unit
+) {
     Box(modifier = Modifier
         .height(64.dp)
         .clickable(onTap != null) { onTap?.invoke() }) {
