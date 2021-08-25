@@ -4,9 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -16,7 +19,9 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.whenStarted
@@ -25,10 +30,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.fragment.findNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.mrlin.composemany.R
 import com.mrlin.composemany.pages.music.MusicHomeState
 import com.mrlin.composemany.pages.music.MusicHomeViewModel
 import com.mrlin.composemany.pages.music.MusicScreen
-import com.mrlin.composemany.pages.music.login.MusicLoginPage
+import com.mrlin.composemany.pages.music.login.MusicLogin
 import com.mrlin.composemany.state.ViewState
 import com.mrlin.composemany.ui.theme.Blue500
 import com.mrlin.composemany.ui.theme.ComposeManyTheme
@@ -66,12 +72,15 @@ class NetEaseMusicHomeFragment : Fragment() {
             ) {
                 composable(HomeScreen.Home.route) {
                     val userState by viewModel.userState.collectAsState()
-                    when (userState) {
-                        is MusicHomeState.Visitor -> MusicLoginPage(viewModel)
-                        is MusicHomeState.Login -> MusicHome((userState as MusicHomeState.Login).user) {
-                            when (it) {
-                                is MusicScreen -> findNavController().navigate(it.directions)
-                                is HomeScreen -> navController.navigate(it.route)
+                    Crossfade(targetState = userState) {
+                        when (it) {
+                            is MusicHomeState.Splash -> MusicSplash()
+                            is MusicHomeState.Visitor -> MusicLogin(viewModel)
+                            is MusicHomeState.Login -> MusicHome(it.user) { screen ->
+                                when (screen) {
+                                    is MusicScreen -> findNavController().navigate(screen.directions)
+                                    is HomeScreen -> navController.navigate(screen.route)
+                                }
                             }
                         }
                     }
@@ -90,6 +99,16 @@ class NetEaseMusicHomeFragment : Fragment() {
                 FailureTip(reason = (viewState as ViewState.Error).reason)
             }
         }
+    }
+}
+
+@Composable
+private fun MusicSplash() {
+    Box(Modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(id = R.drawable.music), contentDescription = null,
+            modifier = Modifier.align(Alignment.Center).size(128.dp)
+        )
     }
 }
 

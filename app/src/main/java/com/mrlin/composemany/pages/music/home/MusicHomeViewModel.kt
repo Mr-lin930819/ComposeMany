@@ -30,7 +30,7 @@ class MusicHomeViewModel @Inject constructor(
     private val musicSettings: DataStore<MusicSettings>
 ) : ViewModel() {
     private val _userState: MutableStateFlow<MusicHomeState> =
-        MutableStateFlow(MusicHomeState.Visitor)
+        MutableStateFlow(MusicHomeState.Splash)
     private val _viewState: MutableStateFlow<ViewState> = MutableStateFlow(ViewState.Normal)
     private var busyCount = 0
     private val _discoveryData: MutableStateFlow<DiscoveryViewData> =
@@ -131,6 +131,7 @@ class DiscoveryViewData {
  * 音乐主页状态
  */
 sealed class MusicHomeState {
+    object Splash : MusicHomeState()
     object Visitor : MusicHomeState()
     class Login(val user: User? = null) : MusicHomeState()
 }

@@ -20,7 +20,7 @@ import com.mrlin.composemany.pages.music.MusicHomeViewModel
  * 创建于 2021年08月19日
  ******************************** */
 @Composable
-fun MusicLoginPage(vm: MusicHomeViewModel? = null) {
+fun MusicLogin(vm: MusicHomeViewModel? = null) {
     Scaffold(topBar = {
         TopAppBar(title = { Text(text = "手机号登录") })
     }) {
@@ -51,5 +51,5 @@ fun MusicLoginPage(vm: MusicHomeViewModel? = null) {
 @Preview
 @Composable
 private fun MusicLoginPagePreview() {
-    MusicLoginPage()
+    MusicLogin()
 }
