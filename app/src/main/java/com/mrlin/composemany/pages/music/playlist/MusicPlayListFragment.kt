@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -69,9 +68,11 @@ class MusicPlayListFragment : Fragment() {
                     ),
                     contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()
                 )
-                Row(modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(8.dp)) {
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(8.dp)
+                ) {
                     PlayListCover(url = recommend.picUrl, width = 160f, playCount = recommend.playcount)
                     Column(
                         Modifier
@@ -97,6 +98,10 @@ class MusicPlayListFragment : Fragment() {
     }
 }
 
+/**
+ * 关于内嵌滚动实现折叠工具栏，参考的官网例子：
+ * [https://developer.android.google.cn/reference/kotlin/androidx/compose/ui/input/nestedscroll/package-summary]
+ */
 @Composable
 private fun PlayListAppBar(
     title: String, expandedHeight: Dp? = null, bottom: (@Composable () -> Unit)? = null,
@@ -129,7 +134,7 @@ private fun PlayListAppBar(
             }
         }
     }
-    val percent = FastOutSlowInEasing.transform((toolbarOffsetHeightPx.value.plus(expandedHeightPx)) / expandedHeightPx)
+    val percent = toolbarOffsetHeightPx.value.plus(expandedHeightPx) / expandedHeightPx
     val tbHeight = with(LocalDensity.current) { (toolbarExpandedHeightPx.value).toDp() }
     Column(
         Modifier
