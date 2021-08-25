@@ -49,7 +49,7 @@ fun PlayListWidget(
 }
 
 @Composable
-private fun PlayListCover(
+fun PlayListCover(
     playCount: Long? = null, width: Float = 140f, height: Float = width, radius: Float = 16f,
     url: String? = null
 ) {

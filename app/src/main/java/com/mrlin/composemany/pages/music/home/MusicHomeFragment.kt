@@ -107,7 +107,9 @@ private fun MusicSplash() {
     Box(Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(id = R.drawable.music), contentDescription = null,
-            modifier = Modifier.align(Alignment.Center).size(128.dp)
+            modifier = Modifier
+                .align(Alignment.Center)
+                .size(128.dp)
         )
     }
 }

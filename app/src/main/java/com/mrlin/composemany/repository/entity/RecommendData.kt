@@ -19,7 +19,7 @@ data class Recommend(
     val type: Int = 0,
     val name: String,
     val copywriter: String? = null,
-    val picUrl: String,
+    val picUrl: UrlString,
     val playcount: Long,
     val createTime: Long,
     val creator: Creator? = null,
@@ -46,7 +46,7 @@ data class Creator(
     val userId: Long,
     val vipType: Int,
     val province: Int,
-    val avatarUrl: String,
+    val avatarUrl: UrlString,
     val authStatus: Int,
     val userType: Int,
     val nickname: String,
@@ -57,3 +57,7 @@ data class Creator(
     val signature: String,
     val authority: Int,
 ) : Parcelable
+
+typealias UrlString = String
+
+fun UrlString.limitSize(width: Int, height: Int = width) = "$this?param=${width}y${height}"
