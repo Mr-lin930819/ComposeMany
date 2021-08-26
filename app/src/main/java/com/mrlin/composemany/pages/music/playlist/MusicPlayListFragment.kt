@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.navigation.fragment.navArgs
 import coil.compose.rememberImagePainter
 import coil.request.CachePolicy
@@ -64,58 +63,18 @@ class MusicPlayListFragment : Fragment() {
     ): View = composeContent {
         ComposeManyTheme {
             val recommend = args.recommend
-            val context = LocalContext.current
             val playList by viewModel.playList.collectAsState()
-            PlayListAppBar(recommend.name, expandedHeight = 320.dp, background = {
-                Image(
-                    painter = rememberImagePainter(
-                        ImageRequest.Builder(context)
-                            .data(recommend.picUrl.limitSize(160))
-                            .diskCachePolicy(CachePolicy.DISABLED)
-                            .transformations(BlurTransformation(context, radius = 20f))
-                            .build()
-                    ),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(8.dp)
-                ) {
-                    PlayListCover(
-                        url = recommend.picUrl,
-                        width = 160f,
-                        playCount = recommend.playcount
-                    )
-                    Column(
-                        Modifier
-                            .padding(start = 10.dp)
-                            .weight(1.0f)
-                    ) {
-                        Text(text = recommend.name, maxLines = 2)
-                        Row {
-                            Image(
-                                painter = rememberImagePainter(
-                                    recommend.creator?.avatarUrl?.limitSize(
-                                        50
-                                    ).orEmpty()
-                                ),
-                                contentDescription = null,
-                            )
-                            Text(text = recommend.creator?.nickname.orEmpty())
-                        }
-                    }
-                }
+            val expandedHeight = 320.dp
+            PlayListAppBar(recommend.name, expandedHeight = expandedHeight, background = {
+                AppBarBackground(recommend = recommend)
             }, bottom = {
                 MusicListHeader {
-                    Result
+                    //播放全部
                 }
             }) {
                 Column {
                     Box(modifier = Modifier.weight(1.0f)) {
-                        SongsList(playList = playList, playSongsViewModel = playSongsViewModel)
+                        SongsList(playList = playList, playSongsViewModel = playSongsViewModel, expandedHeight)
                     }
                     PlayWidget(viewModel = playSongsViewModel)
                 }
@@ -124,12 +83,63 @@ class MusicPlayListFragment : Fragment() {
     }
 }
 
+/**
+ * 标题栏内容背景
+ */
 @Composable
-private fun SongsList(playList: ViewState, playSongsViewModel: PlaySongsViewModel) {
+private fun BoxScope.AppBarBackground(recommend: Recommend) {
+    val context = LocalContext.current
+    Image(
+        painter = rememberImagePainter(
+            ImageRequest.Builder(context)
+                .data(recommend.picUrl.limitSize(160))
+                .diskCachePolicy(CachePolicy.DISABLED)
+                .transformations(BlurTransformation(context, radius = 20f))
+                .build()
+        ),
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        modifier = Modifier.fillMaxSize()
+    )
+    Row(
+        modifier = Modifier
+            .align(Alignment.Center)
+            .padding(8.dp)
+    ) {
+        PlayListCover(
+            url = recommend.picUrl,
+            width = 160f,
+            playCount = recommend.playcount
+        )
+        Column(
+            Modifier
+                .padding(start = 10.dp)
+                .weight(1.0f)
+        ) {
+            Text(text = recommend.name, maxLines = 2)
+            Row {
+                Image(
+                    painter = rememberImagePainter(
+                        recommend.creator?.avatarUrl?.limitSize(
+                            50
+                        ).orEmpty()
+                    ),
+                    contentDescription = null,
+                )
+                Text(text = recommend.creator?.nickname.orEmpty())
+            }
+        }
+    }
+}
+
+@Composable
+private fun SongsList(playList: ViewState, playSongsViewModel: PlaySongsViewModel, topPadding: Dp = 0.dp) {
     when (playList) {
-        is ViewState.Busy -> CircularProgressIndicator()
+        is ViewState.Busy -> Box(modifier = Modifier.padding(top = topPadding)) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        }
         is MusicPlayListViewModel.PlayListState ->
-            LazyColumn {
+            LazyColumn(contentPadding = PaddingValues(top = topPadding)) {
                 itemsIndexed(playList.data.tracks) { index, track ->
                     MusicListItem(
                         MusicData(
@@ -139,20 +149,23 @@ private fun SongsList(playList: ViewState, playSongsViewModel: PlaySongsViewMode
                             } - ${track.al.name}"
                         )
                     ) {
-                        playSongsViewModel.playSongs(playList.data.tracks
-                            .map {
-                                Song(
-                                    it.id,
-                                    it.name,
-                                    it.artists(),
-                                    UString(it.al.picUrl.orEmpty())
-                                )
-                            }, index
+                        playSongsViewModel.playSongs(
+                            playList.data.tracks
+                                .map {
+                                    Song(
+                                        it.id,
+                                        it.name,
+                                        it.artists(),
+                                        UString(it.al.picUrl.orEmpty())
+                                    )
+                                }, index
                         )
                     }
                 }
             }
-        is ViewState.Error -> Text(text = playList.reason)
+        is ViewState.Error -> Box(modifier = Modifier.padding(top = topPadding)) {
+            Text(text = playList.reason, modifier = Modifier.align(Alignment.Center))
+        }
     }
 }
 
@@ -202,46 +215,37 @@ private fun PlayListAppBar(
     background: (@Composable BoxScope.() -> Unit)? = null,
     content: (@Composable () -> Unit)? = null,
 ) {
-// here we use LazyColumn that has build-in nested scroll, but we want to act like a
-// parent for this LazyColumn and participate in its nested scroll.
-// Let's make a collapsing toolbar for LazyColumn
     val toolbarHeight = 48.dp
     val toolbarHeightPx = with(LocalDensity.current) { toolbarHeight.roundToPx().toFloat() }
-// our offset to collapse toolbar
     val toolbarOffsetHeightPx = remember { mutableStateOf(0f) }
     val expandedHeightPx =
         with(LocalDensity.current) { expandedHeight?.roundToPx()?.toFloat() ?: toolbarHeightPx }
     val toolbarExpandedHeightPx = remember { mutableStateOf(expandedHeightPx) }
-// now, let's create connection to the nested scroll system and listen to the scroll
-// happening inside child LazyColumn
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                // try to consume before LazyColumn to collapse toolbar if needed, hence pre-scroll
                 val delta = available.y
                 val newOffset = toolbarOffsetHeightPx.value + delta
                 val newExpendedHeight = toolbarExpandedHeightPx.value + delta
                 toolbarExpandedHeightPx.value =
                     newExpendedHeight.coerceIn(toolbarHeightPx, expandedHeightPx)
                 toolbarOffsetHeightPx.value = newOffset.coerceIn(-expandedHeightPx, 0f)
-                // here's the catch: let's pretend we consumed 0 in any case, since we want
-                // LazyColumn to scroll anyway for good UX
-                // We're basically watching scroll without taking it
                 return Offset.Zero
             }
         }
     }
     val percent = toolbarOffsetHeightPx.value.plus(expandedHeightPx) / expandedHeightPx
     val tbHeight = with(LocalDensity.current) { (toolbarExpandedHeightPx.value).toDp() }
-    Column(
+    Box(
         Modifier
             .fillMaxSize()
-            // attach as a parent to the nested scroll system
             .nestedScroll(nestedScrollConnection)
     ) {
+        content?.invoke()
         Surface(
-            color = MaterialTheme.colors.primary
-            //                .offset { IntOffset(x = 0, y = toolbarOffsetHeightPx.value.roundToInt()) },
+            color = MaterialTheme.colors.primary,
+            modifier = Modifier
+//                .offset { IntOffset(x = 0, y = toolbarOffsetHeightPx.value.roundToInt()) },
         ) {
             Box {
                 background?.let {
@@ -251,34 +255,28 @@ private fun PlayListAppBar(
                             .alpha(percent), content = it
                     )
                 }
-                Column {
+                Column(modifier = Modifier
+                    .height(tbHeight)
+                    .fillMaxWidth()) {
                     Column(
-                        horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
-                            .height(tbHeight)
-                            .fillMaxWidth()
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
+                        //标题栏
                         Text(
                             title,
                             textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.h5,
+                            style = MaterialTheme.typography.h6,
                             modifier = Modifier
                                 .fillMaxSize()
                                 .alpha(1 - percent)
                         )
-                        Box(
-                            modifier = Modifier
-                                .weight(1.0f)
-                                .offset()
-                        ) {
-
-                        }
                     }
+                    Box(modifier = Modifier.weight(1.0f))
+                    //底栏
                     bottom?.invoke()
                 }
             }
         }
-        // our list with build in nested scroll support that will notify us about its scroll
-        content?.invoke()
     }
 }
 
