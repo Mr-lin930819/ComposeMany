@@ -57,5 +57,11 @@ interface NetEaseMusicApi {
      * 播放列表详情
      */
     @GET("/playlist/detail")
-    fun playListDetail(@Query("id") id: Long) : Call<PlayListData>
+    fun playListDetail(@Query("id") id: Long): Call<PlayListData>
+
+    /**
+     * 获取音乐 url
+     */
+    @GET("/song/url")
+    fun musicUrl(@Query("id") id: Long, @Query("br") br: Int = 128000): Call<MusicUrlData>
 }
