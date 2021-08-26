@@ -35,6 +35,10 @@ import coil.request.CachePolicy
 import coil.request.ImageRequest
 import coil.transform.BlurTransformation
 import coil.transform.RoundedCornersTransformation
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.fade
+import com.google.accompanist.placeholder.material.placeholder
+import com.google.accompanist.placeholder.material.shimmer
 import com.mrlin.composemany.pages.music.PlaySongsViewModel
 import com.mrlin.composemany.pages.music.home.composeContent
 import com.mrlin.composemany.pages.music.widgets.PlayListCover
@@ -135,7 +139,7 @@ private fun BoxScope.AppBarBackground(recommend: Recommend) {
 @Composable
 private fun SongsList(playList: ViewState, playSongsViewModel: PlaySongsViewModel, topPadding: Dp = 0.dp) {
     when (playList) {
-        is ViewState.Busy -> Box(modifier = Modifier.padding(top = topPadding)) {
+        is ViewState.Busy -> Box(modifier = Modifier.padding(top = topPadding).fillMaxSize()) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         }
         is MusicPlayListViewModel.PlayListState ->

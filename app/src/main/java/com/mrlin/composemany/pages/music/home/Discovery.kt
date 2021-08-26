@@ -16,6 +16,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.placeholder
+import com.google.accompanist.placeholder.material.shimmer
 import com.mrlin.composemany.R
 import com.mrlin.composemany.pages.music.MusicScreen
 import com.mrlin.composemany.pages.music.widgets.CustomBanner
@@ -118,7 +121,13 @@ private fun CategoryList(onClick: (String) -> Unit) {
 private fun RecommendPlayList(recommendList: List<Recommend>, onClick: (Recommend) -> Unit) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(20.dp),
-        contentPadding = PaddingValues(10.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(10.dp)
+            .placeholder(
+                recommendList.isEmpty(),
+                highlight = PlaceholderHighlight.shimmer()
+            )
     ) {
         items(recommendList) {
             PlayListWidget(

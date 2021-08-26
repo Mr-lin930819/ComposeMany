@@ -16,6 +16,9 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.rememberPagerState
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.placeholder
+import com.google.accompanist.placeholder.material.shimmer
 
 /*********************************
  * 自定义banner
@@ -29,21 +32,23 @@ fun CustomBanner(urls: List<String>, height: Int, onTap: (Int) -> Unit) {
     Box(
         Modifier
             .height(height.dp)
-            .fillMaxWidth()) {
+            .fillMaxWidth()
+            .padding(8.dp)
+            .placeholder(urls.isEmpty(), highlight = PlaceholderHighlight.shimmer())
+    ) {
         HorizontalPager(state = pagerState) { page ->
             Image(
                 painter = rememberImagePainter(urls[page]),
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp)
                     .clickable { onTap(page) }
             )
         }
         HorizontalPagerIndicator(
             pagerState = pagerState,
             modifier = Modifier
-                .padding(16.dp)
+                .padding(8.dp)
                 .align(Alignment.BottomCenter),
             activeColor = Color.White, inactiveColor = Color.LightGray
         )
