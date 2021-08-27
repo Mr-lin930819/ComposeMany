@@ -5,10 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.PlayArrow
@@ -17,12 +17,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -39,14 +42,17 @@ import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.fade
 import com.google.accompanist.placeholder.material.placeholder
 import com.google.accompanist.placeholder.material.shimmer
+import com.mrlin.composemany.R
 import com.mrlin.composemany.pages.music.PlaySongsViewModel
 import com.mrlin.composemany.pages.music.home.composeContent
 import com.mrlin.composemany.pages.music.widgets.PlayListCover
 import com.mrlin.composemany.pages.music.widgets.PlayWidget
 import com.mrlin.composemany.repository.entity.*
 import com.mrlin.composemany.state.ViewState
+import com.mrlin.composemany.ui.theme.Blue500
 import com.mrlin.composemany.ui.theme.ComposeManyTheme
 import dagger.hilt.android.AndroidEntryPoint
+import me.onebone.toolbar.*
 
 /*********************************
  * 音乐播放列表
@@ -83,6 +89,75 @@ class MusicPlayListFragment : Fragment() {
                     PlayWidget(viewModel = playSongsViewModel)
                 }
             }
+
+//            Column {
+//                CollapsingToolbarScaffold(
+//                    modifier = Modifier.fillMaxSize(),
+//                    state = rememberCollapsingToolbarScaffoldState(),
+//                    scrollStrategy = ScrollStrategy.ExitUntilCollapsed,
+//                    toolbar = {
+//                        CollapsingToolbar(collapsingToolbarState = rememberCollapsingToolbarState(), modifier = Modifier.height(96.dp)) {
+//                            Surface(color = Blue500, modifier = Modifier.fillMaxWidth()) {
+//                                Text(text = "测试", modifier = Modifier.height(48.dp))
+//                            }
+//                        }
+//                    }
+//                ) {
+//                    SongsList(playList = playList, playSongsViewModel = playSongsViewModel, expandedHeight)
+//                    Box(modifier = Modifier.fillMaxSize()) {
+//                        SongsList(playList = playList, playSongsViewModel = playSongsViewModel, expandedHeight)
+//                    }
+//                }
+//                PlayWidget(viewModel = playSongsViewModel)
+//            }
+
+//            CollapsingEffectScreen(
+//                recommend.name, expandedHeight = expandedHeight, background = {
+//                    AppBarBackground(recommend = recommend)
+//                }
+//            ) {
+//                when (playList) {
+//                    is ViewState.Busy -> item {
+//                        Box(
+//                            modifier = Modifier
+//                                .padding(top = 0.dp)
+//                                .fillMaxSize()
+//                        ) {
+//                            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+//                        }
+//                    }
+//                    is MusicPlayListViewModel.PlayListState -> itemsIndexed((playList as MusicPlayListViewModel.PlayListState).data.tracks) { index, track ->
+//                        MusicListItem(
+//                            MusicData(
+//                                track.mv, index = index + 1, songName = track.name,
+//                                artists = "${
+//                                    track.ar.joinToString("/") { it.name }
+//                                } - ${track.al.name}"
+//                            )
+//                        ) {
+//                            playSongsViewModel.playSongs(
+//                                (playList as MusicPlayListViewModel.PlayListState).data.tracks
+//                                    .map {
+//                                        Song(
+//                                            it.id,
+//                                            it.name,
+//                                            it.artists(),
+//                                            UString(it.al.picUrl.orEmpty())
+//                                        )
+//                                    }, index
+//                            )
+//                        }
+//                    }
+//                    is ViewState.Error -> item {
+//                        Box(modifier = Modifier.padding(top = 0.dp)) {
+//                            Text(
+//                                text = (playList as ViewState.Error).reason,
+//                                modifier = Modifier.align(Alignment.Center)
+//                            )
+//                        }
+//                    }
+//                }
+//            }
         }
     }
 }
@@ -139,7 +214,11 @@ private fun BoxScope.AppBarBackground(recommend: Recommend) {
 @Composable
 private fun SongsList(playList: ViewState, playSongsViewModel: PlaySongsViewModel, topPadding: Dp = 0.dp) {
     when (playList) {
-        is ViewState.Busy -> Box(modifier = Modifier.padding(top = topPadding).fillMaxSize()) {
+        is ViewState.Busy -> Box(
+            modifier = Modifier
+                .padding(top = topPadding)
+                .fillMaxSize()
+        ) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         }
         is MusicPlayListViewModel.PlayListState ->
@@ -259,9 +338,11 @@ private fun PlayListAppBar(
                             .alpha(percent), content = it
                     )
                 }
-                Column(modifier = Modifier
-                    .height(tbHeight)
-                    .fillMaxWidth()) {
+                Column(
+                    modifier = Modifier
+                        .height(tbHeight)
+                        .fillMaxWidth()
+                ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
@@ -282,6 +363,104 @@ private fun PlayListAppBar(
             }
         }
     }
+}
+
+@Composable
+fun CollapsingEffectScreen(
+    title: String, expandedHeight: Dp? = null, background: (@Composable BoxScope.() -> Unit)? = null,
+    content: (LazyListScope.() -> Unit)? = null,
+) {
+    val lazyListState = rememberLazyListState()
+    var scrolledY = 0f
+    var previousOffset = 0
+    val toolbarHeight = 48.dp
+    val toolbarHeightPx = with(LocalDensity.current) { toolbarHeight.roundToPx().toFloat() }
+    val expandedHeightPx =
+        with(LocalDensity.current) { expandedHeight?.roundToPx()?.toFloat() ?: toolbarHeightPx }
+    var percent = 1.0f
+    LazyColumn(
+        Modifier.fillMaxSize(),
+        lazyListState,
+    ) {
+        item {
+            Surface(
+                modifier = Modifier
+                    .graphicsLayer {
+                        scrolledY += lazyListState.firstVisibleItemScrollOffset - previousOffset
+//                        translationY = scrolledY * 0.5f
+                        percent = 1 - scrolledY.coerceAtMost(expandedHeightPx) / expandedHeightPx
+                        previousOffset = lazyListState.firstVisibleItemScrollOffset
+                        alpha = percent
+                    }
+                    .height(expandedHeight ?: 48.dp)
+                    .fillMaxWidth()
+            ) {
+                background?.let {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .alpha(percent), content = it
+                    )
+                }
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        //标题栏
+                        Text(
+                            title,
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.h6,
+                            modifier = Modifier
+                                .fillMaxSize()
+//                                .alpha(1 - percent)
+                        )
+                    }
+                    Box(modifier = Modifier.weight(1.0f))
+                    //底栏
+//                    bottom?.invoke()
+                }
+            }
+        }
+        content?.invoke(this)
+    }
+
+//        val items = (1..100).map { "Item $it" }
+//        val lazyListState = rememberLazyListState()
+//        var scrolledY = 0f
+//        var previousOffset = 0
+//        LazyColumn(
+//            Modifier.fillMaxSize(),
+//            lazyListState,
+//        ) {
+//            item {
+//                Image(
+//                    painter = painterResource(id = R.drawable.ic_compose),
+//                    contentDescription = null,
+//                    contentScale = ContentScale.FillWidth,
+//                    modifier = Modifier
+//                        .graphicsLayer {
+//                            scrolledY += lazyListState.firstVisibleItemScrollOffset - previousOffset
+//                            translationY = scrolledY * 0.5f
+//                            previousOffset = lazyListState.firstVisibleItemScrollOffset
+//                        }
+//                        .height(expandedHeight ?: 48.dp)
+//                        .fillMaxWidth()
+//                )
+//            }
+//            items(items) {
+//                Text(
+//                    text = it,
+//                    Modifier
+//                        .background(Color.White)
+//                        .fillMaxWidth()
+//                        .padding(8.dp)
+//                )
+//            }
+//        }
 }
 
 @Composable
