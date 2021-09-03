@@ -8,8 +8,22 @@ data class PlayListData(
     val playlist: PlayList,
 )
 
+/**
+ * 个人歌单
+ */
+data class MyPlayListData(
+    val code: Int,
+    val playlist: List<PlayList>,
+)
+
 data class PlayList(
     val tracks: List<Track>,
+    val creator: Subscribers? = null,
+    val name: String = "",
+)
+
+data class Subscribers(
+    val userId: Int,
 )
 
 data class Track(

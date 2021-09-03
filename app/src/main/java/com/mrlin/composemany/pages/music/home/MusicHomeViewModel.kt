@@ -32,10 +32,13 @@ class MusicHomeViewModel @Inject constructor(
     private val _viewState: MutableStateFlow<ViewState> = MutableStateFlow(ViewState.Normal)
     private val _discoveryData: MutableStateFlow<DiscoveryViewData> =
         MutableStateFlow(DiscoveryViewData())
+    //个人歌单
+    private val _myPlayList = MutableStateFlow<ViewState>(ViewState.Normal)
 
     val userState: StateFlow<MusicHomeState> = _userState
     val viewState: StateFlow<ViewState> = _viewState
     val discoveryData: StateFlow<DiscoveryViewData> = _discoveryData
+    val myPlayList: StateFlow<ViewState> = _myPlayList
 
     init {
         busyWork(_viewState) {
@@ -95,6 +98,26 @@ class MusicHomeViewModel @Inject constructor(
             }
         })
     }
+
+    /**
+     * “我的”页面载入
+     */
+    fun loadMyMusicPage(user: User?) = busyWork(_myPlayList) {
+        return@busyWork MyPlayListLoaded(
+            netEaseMusicApi.selfPlaylistData(user?.accountId?.toLong() ?: 0).await().playlist, user
+        )
+    }
+}
+
+/**
+ * 个人歌单载入完毕
+ */
+class MyPlayListLoaded(val playList: List<PlayList>, user: User?) : ViewState() {
+    //我创建的歌单
+    val selfCreates = playList.filter { it.creator?.userId == user?.accountId }
+
+    //收藏的歌单
+    val collects = playList.filterNot { it.creator?.userId == user?.accountId }
 }
 
 /**

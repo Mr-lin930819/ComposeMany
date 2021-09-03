@@ -50,8 +50,10 @@ private fun Home(
             .background(color = Color.White)
     ) {
         val discoveryViewData by vm?.discoveryData?.collectAsState() ?: return
+        val myPlayList by vm?.myPlayList?.collectAsState() ?: return
         LaunchedEffect(key1 = true, block = {
             vm?.loadDiscoveryPage()
+            vm?.loadMyMusicPage(user)
         })
         Row(
             Modifier
@@ -76,7 +78,7 @@ private fun Home(
         }
         val pages: List<Pair<String, @Composable () -> Unit>> = listOf(
             "发现" to { Discovery(discoveryViewData, onToScreen = onToScreen) },
-            "我的" to { Mine() },
+            "我的" to { Mine(myPlayList) },
             "动态" to { NewAction() }
         )
         val pagerState = rememberPagerState(pageCount = 3)
