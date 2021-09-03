@@ -76,7 +76,7 @@ private fun Home(
         }
         val pages: List<Pair<String, @Composable () -> Unit>> = listOf(
             "发现" to { Discovery(discoveryViewData, onToScreen = onToScreen) },
-            "我的" to { My() },
+            "我的" to { Mine() },
             "动态" to { NewAction() }
         )
         val pagerState = rememberPagerState(pageCount = 3)
@@ -100,13 +100,6 @@ private fun Tab(tab: String, selected: Boolean, onClick: () -> Unit) {
         selected = selected, onClick = onClick, modifier = Modifier.height(48.dp)
     ) {
         Text(text = tab)
-    }
-}
-
-@Composable
-private fun My() {
-    Box(Modifier.fillMaxSize()) {
-        Text(text = "我的", modifier = Modifier.align(Alignment.Center))
     }
 }
 
