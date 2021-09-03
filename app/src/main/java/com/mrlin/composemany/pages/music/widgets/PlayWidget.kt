@@ -1,6 +1,7 @@
 package com.mrlin.composemany.pages.music.widgets
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -31,6 +32,7 @@ fun PlayWidget(viewModel: PlaySongsViewModel = viewModel()) {
         modifier = Modifier
             .height(80.dp)
             .fillMaxWidth()
+            .background(color = Color.White)
             .border(1.dp, color = Color.LightGray)
             .padding(8.dp)
     ) {
