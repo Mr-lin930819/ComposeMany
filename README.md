@@ -7,22 +7,22 @@
 
 主页面实现的界面有两项：
 
-![main](.\screenshots\main.png)
+![main](https://github.com/Mr-lin930819/ComposeMany/blob/0f5ac3f8cbf3ab24882ec24b5bdf1aabc7c6f2fd/screenshots/main.png)
 
-#### 音乐
+### 音乐
 
 - 音乐功能借鉴了Flutter项目：[Flutter 版本的网易云音乐 ](https://github.com/fluttercandies/NeteaseCloudMusic)
 - 音乐API使用： [Binaryify/NeteaseCloudMusicApi: 网易云音乐 Node.js API service (github.com)](https://github.com/Binaryify/NeteaseCloudMusicApi)，使用Vercel构建
 
-![music_main](.\screenshots\music_main.png)
+![music_main](https://github.com/Mr-lin930819/ComposeMany/blob/0f5ac3f8cbf3ab24882ec24b5bdf1aabc7c6f2fd/screenshots/music_main.png)
 
 
 
-#### 基金
+### 基金
 
 基金页面仿支付宝基金功能，仅作练习，**无任何实际功能**
 
-![fund_main](C:\Users\mrlin\StudioProjects\ComposeMany\screenshots\fund_main.png)
+![fund_main](https://github.com/Mr-lin930819/ComposeMany/blob/0f5ac3f8cbf3ab24882ec24b5bdf1aabc7c6f2fd/screenshots/fund_main.png)
 
 
 
