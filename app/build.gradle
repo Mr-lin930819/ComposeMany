@@ -29,9 +29,9 @@ android {
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments += [
-                        "room.schemaLocation":"$projectDir/schemas".toString(),
-                        "room.incremental":"true",
-                        "room.expandProjection":"true"]
+                        "room.schemaLocation"  : "$projectDir/schemas".toString(),
+                        "room.incremental"     : "true",
+                        "room.expandProjection": "true"]
             }
         }
     }
@@ -40,6 +40,9 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            signingConfig signingConfigs.debug
         }
     }
     compileOptions {
@@ -59,6 +62,14 @@ android {
     packagingOptions {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+    signingConfigs {
+        debug {
+            storeFile file('../ks/composemany.jks')
+            storePassword 'composemany'
+            keyAlias 'many'
+            keyPassword 'composemany'
         }
     }
 }
@@ -94,7 +105,7 @@ dependencies {
     kapt "androidx.room:room-compiler:$room_version"
     //datastore
     implementation "androidx.datastore:datastore:1.0.0"
-    implementation  "com.google.protobuf:protobuf-javalite:3.10.0"
+    implementation "com.google.protobuf:protobuf-javalite:3.10.0"
     //splashscreen
     implementation "androidx.core:core-splashscreen:1.0.0-alpha01"
     //retrofit

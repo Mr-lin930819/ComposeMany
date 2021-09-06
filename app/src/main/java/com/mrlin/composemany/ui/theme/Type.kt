@@ -18,7 +18,7 @@ val Typography = Typography(
                 fontWeight = FontWeight.Normal,
                 fontSize = 12.sp,
                 letterSpacing = 0.4.sp,
-                color = Color.White
+                color = Color.Gray
         )
         /* Other default text styles to override
     button = TextStyle(

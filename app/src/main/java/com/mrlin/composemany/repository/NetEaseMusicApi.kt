@@ -70,4 +70,16 @@ interface NetEaseMusicApi {
      */
     @GET("/user/playlist")
     fun selfPlaylistData(@Query("uid") uid: Long): Call<MyPlayListData>
+
+    /**
+     * 歌曲评论
+     */
+    @GET("/comment/music")
+    fun songCommentData(
+        @Query("id") id: Long,
+        //取出评论数量 , 默认为 20
+        @Query("limit") limit: Int = 20,
+        //偏移数量 , 用于分页 , 如 :( 评论页数 -1)*20, 其中 20 为 limit 的值
+        @Query("offset") offset: Int
+    ): Call<SongCommentData>
 }

@@ -15,9 +15,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberImagePainter
+import com.mrlin.composemany.R
 import com.mrlin.composemany.pages.music.PlaySongsViewModel
 
 /**
@@ -34,7 +36,8 @@ fun PlayWidget(viewModel: PlaySongsViewModel = viewModel(), onClick: () -> Unit)
             .fillMaxWidth()
             .background(color = Color.White)
             .border(1.dp, color = Color.LightGray)
-            .padding(8.dp).clickable(onClick = onClick)
+            .padding(8.dp)
+            .clickable(onClick = onClick)
     ) {
         if (allSongs.isEmpty()) {
             Text(text = "暂无正在播放的歌曲", modifier = Modifier.align(Alignment.Center))
@@ -57,7 +60,7 @@ fun PlayWidget(viewModel: PlaySongsViewModel = viewModel(), onClick: () -> Unit)
                     viewModel.seekPlay()
                 }, modifier = Modifier.weight(1.0f))
                 Icon(
-                    imageVector = if (isPlaying) Icons.Default.Menu else Icons.Default.PlayArrow,
+                    painter = painterResource(if (isPlaying) R.drawable.icon_song_pause else R.drawable.icon_song_play),
                     contentDescription = null,
                     Modifier
                         .size(36.dp)
