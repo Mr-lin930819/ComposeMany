@@ -19,4 +19,12 @@
     <action
         android:id="@+id/toMusicPlayListFragment"
         app:destination="@id/musicPlayListFragment" />
+    <fragment
+        android:id="@+id/playSongFragment"
+        android:name="com.mrlin.composemany.pages.music.playsong.PlaySongFragment"
+        android:label="PlaySongFragment" />
+
+    <action
+        android:id="@+id/toPlaySongFragment"
+        app:destination="@id/playSongFragment" />
 </navigation>

@@ -24,7 +24,7 @@ import com.mrlin.composemany.pages.music.PlaySongsViewModel
  * 页面下面的播放条
  */
 @Composable
-fun PlayWidget(viewModel: PlaySongsViewModel = viewModel()) {
+fun PlayWidget(viewModel: PlaySongsViewModel = viewModel(), onClick: () -> Unit) {
     val allSongs by viewModel.allSongs.collectAsState()
     val curIndex by viewModel.curIndex.collectAsState()
     val curSong = allSongs.getOrNull(curIndex)
@@ -34,7 +34,7 @@ fun PlayWidget(viewModel: PlaySongsViewModel = viewModel()) {
             .fillMaxWidth()
             .background(color = Color.White)
             .border(1.dp, color = Color.LightGray)
-            .padding(8.dp)
+            .padding(8.dp).clickable(onClick = onClick)
     ) {
         if (allSongs.isEmpty()) {
             Text(text = "暂无正在播放的歌曲", modifier = Modifier.align(Alignment.Center))

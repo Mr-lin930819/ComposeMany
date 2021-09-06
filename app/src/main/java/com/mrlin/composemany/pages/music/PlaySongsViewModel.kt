@@ -6,10 +6,13 @@ import androidx.lifecycle.viewModelScope
 import com.mrlin.composemany.repository.NetEaseMusicApi
 import com.mrlin.composemany.repository.entity.Song
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.updateAndGet
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.await
 import javax.inject.Inject
 
@@ -34,7 +37,7 @@ class PlaySongsViewModel @Inject constructor(
     }
 
     private fun play() = viewModelScope.launch {
-        val songId = _songs.value[curIndex.value].id
+        val songId = _songs.value[_curIndex.value].id
         val url = musicApi.musicUrl(songId).await().data.firstOrNull()?.url
             ?: "https://music.163.com/song/media/outer/url?id=${songId}.mp3"
         playMusic(url = url)
