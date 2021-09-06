@@ -20,6 +20,10 @@ data class PlayList(
     val tracks: List<Track>,
     val creator: Subscribers? = null,
     val name: String = "",
+    val coverImgUrl: String = "",
+    val trackCount: Int = 0,
+    val id: Long = 0,
+    val playCount: Long = 0,
 )
 
 data class Subscribers(

@@ -78,7 +78,7 @@ private fun Home(
         }
         val pages: List<Pair<String, @Composable () -> Unit>> = listOf(
             "发现" to { Discovery(discoveryViewData, onToScreen = onToScreen) },
-            "我的" to { Mine(myPlayList) },
+            "我的" to { Mine(myPlayList, onToScreen = onToScreen) },
             "动态" to { NewAction() }
         )
         val pagerState = rememberPagerState(pageCount = 3)

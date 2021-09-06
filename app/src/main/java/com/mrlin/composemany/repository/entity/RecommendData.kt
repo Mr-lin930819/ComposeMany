@@ -21,7 +21,7 @@ data class Recommend(
     val copywriter: String? = null,
     val picUrl: UrlString,
     val playcount: Long,
-    val createTime: Long,
+    val createTime: Long = 0,
     val creator: Creator? = null,
     val trackCount: Int? = null,
     val userId: Long = 0,

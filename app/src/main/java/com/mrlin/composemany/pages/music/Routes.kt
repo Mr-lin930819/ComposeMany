@@ -5,7 +5,7 @@ import com.mrlin.composemany.NavGraphDirections
 import com.mrlin.composemany.repository.entity.Recommend
 
 /*********************************
- *
+ * 音乐功能界面路由
  * @author mrlin
  * 创建于 2021年08月23日
  ******************************** */
