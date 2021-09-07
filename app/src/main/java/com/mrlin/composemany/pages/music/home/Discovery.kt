@@ -47,18 +47,18 @@ internal fun Discovery(
         }
         Column(Modifier.verticalScroll(rememberScrollState())) {
             Text(text = "推荐歌单", modifier = Modifier.padding(10.dp))
-            Box(modifier = Modifier.height(200.dp)) {
+            Box(modifier = Modifier.height(140.dp)) {
                 RecommendPlayList(discoveryViewData.recommendList) {
                     onToScreen?.invoke(MusicScreen.PlayList(it))
                 }
             }
             discoveryViewData.newAlbumList.takeIf { it.isNotEmpty() }?.let {
                 Text(text = "新碟上架", modifier = Modifier.padding(10.dp))
-                Box(modifier = Modifier.height(200.dp)) { NewAlbumList(it) }
+                Box(modifier = Modifier.height(140.dp)) { NewAlbumList(it) }
             }
             discoveryViewData.topMVList.takeIf { it.isNotEmpty() }?.let {
                 Text(text = "MV 排行", modifier = Modifier.padding(10.dp))
-                Box(modifier = Modifier.height(200.dp)) { TopMvList(it) }
+                Box(modifier = Modifier.height(140.dp)) { TopMvList(it) }
             }
         }
     }
@@ -120,7 +120,7 @@ private fun CategoryList(onClick: (String) -> Unit) {
 @Composable
 private fun RecommendPlayList(recommendList: List<Recommend>, onClick: (Recommend) -> Unit) {
     LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(20.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
         modifier = Modifier
             .fillMaxSize()
             .padding(10.dp)
@@ -145,7 +145,7 @@ private fun RecommendPlayList(recommendList: List<Recommend>, onClick: (Recommen
 @Composable
 private fun NewAlbumList(albumList: List<Album>) {
     LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(20.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
         contentPadding = PaddingValues(10.dp)
     ) {
         items(albumList) {
@@ -165,7 +165,7 @@ private fun NewAlbumList(albumList: List<Album>) {
 @Composable
 private fun TopMvList(mvList: List<MVData.MV>) {
     LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(20.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
         contentPadding = PaddingValues(10.dp)
     ) {
         items(mvList) {

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -14,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
@@ -39,6 +41,7 @@ import com.mrlin.composemany.repository.entity.Song
 import com.mrlin.composemany.repository.entity.SongCommentData
 import com.mrlin.composemany.repository.entity.limitSize
 import com.mrlin.composemany.ui.theme.ComposeManyTheme
+import com.mrlin.composemany.utils.simpleNumText
 import dagger.hilt.android.AndroidEntryPoint
 
 /*********************************
@@ -51,7 +54,11 @@ class PlaySongFragment : Fragment() {
     private val playSongViewModel by activityViewModels<PlaySongsViewModel>()
     private val viewModel by viewModels<SongViewModel>()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         return composeContent {
             val curSongIndex by playSongViewModel.curIndex.collectAsState()
             val curSong = playSongViewModel.allSongs.value.getOrNull(curSongIndex)
@@ -103,14 +110,27 @@ private fun PlaySong(
         }
     ) {
         //模糊虚化的封面作为背景
-        Image(painter = rememberImagePainter(song?.picUrl?.limitSize(200), builder = {
-            transformations(BlurTransformation(LocalContext.current, 20f))
-        }), contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.FillHeight)
+        Image(
+            painter = rememberImagePainter(song?.picUrl?.limitSize(200), builder = {
+                transformations(BlurTransformation(LocalContext.current, 16f))
+            }),
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxSize()
+                .drawWithContent {
+                    drawContent()
+                    //背景遮上半透明颜色，改善明亮色调的背景下，白色操作按钮的显示效果
+                    drawRect(Color.Gray, alpha = 0.7f)
+                },
+            contentScale = ContentScale.FillHeight
+        )
         Column(modifier = Modifier.padding(bottom = 12.dp)) {
+            //唱片显示
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(36.dp)
+                    .padding(horizontal = 36.dp)
+                    .weight(1.0f)
             ) {
                 //唱片旋转角度
                 val rotation = infiniteRotation(isPlaying)
@@ -120,10 +140,13 @@ private fun PlaySong(
                 Image(
                     painter = rememberImagePainter(song?.picUrl?.limitSize(200), builder = {
                         transformations(CircleCropTransformation())
-                    }), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier
+                    }),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
                         .align(Alignment.Center)
-                        .height(160.dp)
-                        .padding(8.dp)
+                        .fillMaxWidth()
+                        .padding(20.dp)
                         .graphicsLayer {
                             rotationZ = rotation.value
                         }
@@ -133,7 +156,7 @@ private fun PlaySong(
                     painter = painterResource(id = R.drawable.bet),
                     contentDescription = null,
                     modifier = Modifier
-                        .matchParentSize()
+                        .fillMaxWidth()
                         .align(
                             Alignment.Center
                         )
@@ -143,81 +166,72 @@ private fun PlaySong(
                     painter = painterResource(id = R.drawable.bgm),
                     contentDescription = null,
                     modifier = Modifier
-                        .height(80.dp)
-                        .padding(bottom = 20.dp)
-                        .align(BiasAlignment(0.0f, 1f))
+                        .align(BiasAlignment(0.3f, -1f))
                         .graphicsLayer {
                             rotationZ = stylusRotation
                             transformOrigin = TransformOrigin(0f, 0f)
                         }
                 )
             }
-            //歌词显示
-            Spacer(modifier = Modifier.weight(1.0f))
+            //评论、收藏等歌曲操作
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(horizontal = 16.dp)
                     .height(64.dp), horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                IconButton(onClick = { /*TODO*/ }) {
-                    Icon(painter = painterResource(id = R.drawable.icon_song_download), contentDescription = null)
-                }
-                IconButton(onClick = { /*TODO*/ }) {
-                    Icon(painter = painterResource(id = R.drawable.bfc), contentDescription = null)
-                }
+                MiniButton(R.drawable.icon_song_download)
+                MiniButton(R.drawable.bfc)
                 Box(modifier = Modifier.fillMaxHeight()) {
-                    IconButton(onClick = { /*TODO*/ }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.icon_song_comment),
-                            contentDescription = null
-                        )
-                    }
+                    MiniButton(R.drawable.icon_song_comment)
                     Text(
-                        text = commentData?.total?.toString().orEmpty(),
+                        text = commentData?.total?.toLong()?.simpleNumText().orEmpty(),
                         modifier = Modifier.align(BiasAlignment(0.75f, -0.75f)),
                         style = TextStyle(color = Color.White, fontSize = 10.sp)
                     )
                 }
-                IconButton(onClick = { /*TODO*/ }) {
-                    Icon(painter = painterResource(id = R.drawable.icon_song_more), contentDescription = null)
-                }
+                MiniButton(R.drawable.icon_song_more)
             }
+            //歌曲进度
             Slider(value = progress, onValueChange = {
                 onEvent?.invoke(Event.TrySeek(it))
             }, onValueChangeFinished = {
                 onEvent?.invoke(Event.Seek)
             }, modifier = Modifier
-                .height(64.dp)
+                .height(48.dp)
                 .padding(10.dp)
             )
+            //播放操作
             Row(
                 modifier = Modifier
-                    .height(96.dp)
+                    .height(64.dp)
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { /*TODO*/ }) {
-                    Icon(painter = painterResource(id = R.drawable.icon_song_play_type_1), contentDescription = null)
+                MiniButton(R.drawable.icon_song_play_type_1)
+                MiniButton(R.drawable.icon_song_left)
+                MiniButton(if (isPlaying) R.drawable.icon_song_pause else R.drawable.icon_song_play) {
+                    onEvent?.invoke(Event.TogglePlay)
                 }
-                IconButton(onClick = { /*TODO*/ }) {
-                    Icon(painter = painterResource(id = R.drawable.icon_song_left), contentDescription = null)
-                }
-                IconButton(onClick = { onEvent?.invoke(Event.TogglePlay) }) {
-                    Icon(
-                        painter = painterResource(id = if (isPlaying) R.drawable.icon_song_pause else R.drawable.icon_song_play),
-                        contentDescription = null
-                    )
-                }
-                IconButton(onClick = { /*TODO*/ }) {
-                    Icon(painter = painterResource(id = R.drawable.icon_song_right), contentDescription = null)
-                }
-                IconButton(onClick = { /*TODO*/ }) {
-                    Icon(painter = painterResource(id = R.drawable.icon_play_songs), contentDescription = null)
-                }
+                MiniButton(R.drawable.icon_song_right)
+                MiniButton(R.drawable.icon_play_songs)
             }
         }
+    }
+}
+
+/**
+ * 界面操作的小按键
+ */
+@Composable
+private fun MiniButton(@DrawableRes iconRes: Int, onClick: () -> Unit = { }) {
+    IconButton(onClick = onClick) {
+        Icon(
+            painter = painterResource(id = iconRes),
+            contentDescription = null,
+            tint = Color.LightGray
+        )
     }
 }
 
@@ -225,7 +239,10 @@ private fun PlaySong(
  * 无限循环的旋转动画
  */
 @Composable
-private fun infiniteRotation(startRotate: Boolean, duration: Int = 15 * 1000): Animatable<Float, AnimationVector1D> {
+private fun infiniteRotation(
+    startRotate: Boolean,
+    duration: Int = 15 * 1000
+): Animatable<Float, AnimationVector1D> {
     var rotation by remember { mutableStateOf(Animatable(0f)) }
     LaunchedEffect(key1 = startRotate, block = {
         if (startRotate) {

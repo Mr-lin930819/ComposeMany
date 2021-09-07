@@ -5,13 +5,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
-import androidx.compose.material.Slider
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -54,20 +53,23 @@ fun PlayWidget(viewModel: PlaySongsViewModel = viewModel(), onClick: () -> Unit)
                     Text(text = curSong?.name.orEmpty(), maxLines = 1)
                     Text(text = curSong?.artists.orEmpty())
                 }
-                Slider(value = curProgress, onValueChange = {
-                    viewModel.trySeek(it)
-                }, onValueChangeFinished = {
-                    viewModel.seekPlay()
-                }, modifier = Modifier.weight(1.0f))
-                Icon(
-                    painter = painterResource(if (isPlaying) R.drawable.icon_song_pause else R.drawable.icon_song_play),
-                    contentDescription = null,
-                    Modifier
-                        .size(36.dp)
-                        .clickable {
-                            viewModel.togglePlay()
-                        }
-                )
+                Spacer(modifier = Modifier.weight(1.0f))
+                Box(modifier = Modifier.size(42.dp)) {
+                    Icon(
+                        painter = painterResource(if (isPlaying) R.drawable.icon_song_pause else R.drawable.icon_song_play),
+                        contentDescription = null,
+                        Modifier
+                            .fillMaxSize()
+                            .clickable {
+                                viewModel.togglePlay()
+                            }
+                    )
+                    CircularProgressIndicator(
+                        progress = curProgress,
+                        modifier = Modifier.padding(5.dp),
+                        strokeWidth = 2.dp
+                    )
+                }
             }
         }
     }

@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberImagePainter
 import com.mrlin.composemany.R
+import com.mrlin.composemany.repository.entity.limitSize
+import com.mrlin.composemany.utils.simpleNumText
 
 @Composable
 fun PlayListWidget(
@@ -26,9 +28,9 @@ fun PlayListWidget(
 ) {
     Column(
         Modifier
-            .width(140.dp)
+            .width(112.dp)
             .wrapContentHeight()
-            .clickable(onTap != null, onClick = { onTap?.invoke() })
+            .clickable(onTap != null, onClick = { onTap?.invoke() }),
     ) {
         val lines = maxLines ?: Int.MAX_VALUE
         val overflow = if (maxLines != null) TextOverflow.Ellipsis else TextOverflow.Clip
@@ -50,12 +52,12 @@ fun PlayListWidget(
 
 @Composable
 fun PlayListCover(
-    playCount: Long? = null, width: Float = 140f, height: Float = width, radius: Float = 16f,
+    playCount: Long? = null, width: Float = 108f, height: Float = width, radius: Float = 24f,
     url: String? = null
 ) {
     Box(modifier = Modifier.clip(RoundedCornerShape(radius))) {
         Image(
-            painter = rememberImagePainter("$url?param=${width.toInt()}y${height.toInt()}"),
+            painter = rememberImagePainter("${url?.limitSize(width.toInt(), height.toInt())}"),
             contentDescription = null,
             modifier = Modifier.size(width.dp, height.dp)
         )
@@ -67,7 +69,7 @@ fun PlayListCover(
                     modifier = Modifier.size(20.dp, 20.dp)
                 )
                 Text(
-                    text = it.toString(),
+                    text = it.simpleNumText(),
                     color = Color.White,
                     fontWeight = FontWeight.W500,
                     fontSize = 12.sp
