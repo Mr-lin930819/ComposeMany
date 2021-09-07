@@ -35,6 +35,7 @@ import coil.compose.rememberImagePainter
 import coil.transform.BlurTransformation
 import coil.transform.CircleCropTransformation
 import com.mrlin.composemany.R
+import com.mrlin.composemany.pages.music.MusicScreen
 import com.mrlin.composemany.pages.music.PlaySongsViewModel
 import com.mrlin.composemany.pages.music.home.composeContent
 import com.mrlin.composemany.repository.entity.Song
@@ -76,6 +77,9 @@ class PlaySongFragment : Fragment() {
                         is Event.Seek -> playSongViewModel.seekPlay()
                         is Event.TogglePlay -> playSongViewModel.togglePlay()
                         is Event.Back -> findNavController().navigateUp()
+                        is Event.ToComments -> findNavController().navigate(
+                            MusicScreen.SongComment(curSong ?: return@PlaySong).directions
+                        )
                     }
                 }
             }
@@ -183,7 +187,7 @@ private fun PlaySong(
                 MiniButton(R.drawable.icon_song_download)
                 MiniButton(R.drawable.bfc)
                 Box(modifier = Modifier.fillMaxHeight()) {
-                    MiniButton(R.drawable.icon_song_comment)
+                    MiniButton(R.drawable.icon_song_comment) { onEvent?.invoke(Event.ToComments) }
                     Text(
                         text = commentData?.total?.toLong()?.simpleNumText().orEmpty(),
                         modifier = Modifier.align(BiasAlignment(0.75f, -0.75f)),
@@ -269,6 +273,8 @@ private sealed class Event {
     object TogglePlay : Event()
 
     object Back : Event()
+
+    object ToComments : Event()
 }
 
 @Preview

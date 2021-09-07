@@ -1,5 +1,9 @@
 package com.mrlin.composemany.repository.entity
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class Song(
     //歌曲id
     val id: Long,
@@ -8,5 +12,5 @@ data class Song(
     //演唱者
     val artists: String? = null,
     //歌曲图片
-    val picUrl: UString? = null,
-)
+    val picUrl: String? = null,
+) : Parcelable

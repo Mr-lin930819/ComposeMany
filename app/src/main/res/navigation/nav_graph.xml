@@ -22,9 +22,21 @@
     <fragment
         android:id="@+id/playSongFragment"
         android:name="com.mrlin.composemany.pages.music.playsong.PlaySongFragment"
-        android:label="PlaySongFragment" />
+        android:label="PlaySongFragment">
+        <action
+            android:id="@+id/action_playSongFragment_to_commentsFragment"
+            app:destination="@id/commentsFragment" />
+    </fragment>
 
     <action
         android:id="@+id/toPlaySongFragment"
         app:destination="@id/playSongFragment" />
+    <fragment
+        android:id="@+id/commentsFragment"
+        android:name="com.mrlin.composemany.pages.music.playsong.CommentsFragment"
+        android:label="CommentsFragment">
+        <argument
+            android:name="song"
+            app:argType="com.mrlin.composemany.repository.entity.Song" />
+    </fragment>
 </navigation>

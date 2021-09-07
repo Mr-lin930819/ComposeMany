@@ -201,7 +201,7 @@ private fun SongsList(playList: ViewState, playSongsViewModel: PlaySongsViewMode
                                         it.id,
                                         it.name,
                                         it.artists(),
-                                        UString(it.al.picUrl.orEmpty())
+                                        it.al.picUrl.orEmpty()
                                     )
                                 }, index
                         )

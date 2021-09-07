@@ -45,7 +45,7 @@ fun PlayWidget(viewModel: PlaySongsViewModel = viewModel(), onClick: () -> Unit)
             val isPlaying by viewModel.isPlaying.collectAsState()
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Image(
-                    painter = rememberImagePainter(curSong?.picUrl?.value.orEmpty()),
+                    painter = rememberImagePainter(curSong?.picUrl.orEmpty()),
                     contentDescription = null
                 )
                 Spacer(modifier = Modifier.width(8.dp))

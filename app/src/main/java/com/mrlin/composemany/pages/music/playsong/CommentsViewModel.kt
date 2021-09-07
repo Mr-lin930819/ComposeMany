@@ -3,8 +3,8 @@ package com.mrlin.composemany.pages.music.playsong
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mrlin.composemany.repository.NetEaseMusicApi
+import com.mrlin.composemany.repository.entity.Comment
 import com.mrlin.composemany.repository.entity.Song
-import com.mrlin.composemany.repository.entity.SongCommentData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,18 +13,18 @@ import retrofit2.await
 import javax.inject.Inject
 
 /**
- * 歌曲页面
+ * 评论列表
  */
 @HiltViewModel
-class SongViewModel @Inject constructor(private val musicApi: NetEaseMusicApi) : ViewModel() {
-    private val _songComment = MutableStateFlow(SongCommentData())
+class CommentsViewModel @Inject constructor(private val musicApi: NetEaseMusicApi) : ViewModel() {
+    private val _comments = MutableStateFlow(emptyList<Comment>())
 
-    val songComment: StateFlow<SongCommentData> = _songComment
+    val comments: StateFlow<List<Comment>> = _comments
 
     fun loadComment(song: Song) = viewModelScope.launch {
         try {
-            val comment = musicApi.songCommentData(song.id, offset = 0, limit = 1).await()
-            _songComment.value = comment
+            val comment = musicApi.songCommentData(song.id, offset = 0, limit = 20).await()
+            _comments.value = comment.comments
         } catch (t: Throwable) {
 
         }

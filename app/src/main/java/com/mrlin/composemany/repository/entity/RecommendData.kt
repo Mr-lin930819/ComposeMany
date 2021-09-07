@@ -60,9 +60,4 @@ data class Creator(
 
 typealias UrlString = String
 
-@JvmInline
-value class UString(val value: String)
-
 fun UrlString.limitSize(width: Int, height: Int = width) = "$this?param=${width}y${height}"
-
-fun UString.limitSize(width: Int, height: Int = width) = "${this.value}?param=${width}y${height}"
