@@ -126,7 +126,7 @@ private fun PlaylistItem(playList: PlayList, onClick: () -> Unit) {
         Image(painter = rememberImagePainter(data = playList.coverImgUrl.limitSize(80)), contentDescription = null)
         Spacer(modifier = Modifier.width(8.dp))
         Column {
-            Text(text = playList.name)
+            Text(text = playList.name, maxLines = 1)
             Text(text = "${playList.trackCount}首", style = MaterialTheme.typography.subtitle2)
         }
     }

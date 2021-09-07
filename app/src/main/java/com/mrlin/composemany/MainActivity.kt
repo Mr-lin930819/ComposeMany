@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity() {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
                     viewModel.runTimer()
-                    Greeting("Android", viewModel.time, viewModel.menuList(), onMenuClick = { menu ->
+                    Greeting("Compose", viewModel.time, viewModel.menuList(), onMenuClick = { menu ->
                         when (menu) {
                             is MainMenu.Fund -> startActivity(Intent(this, FundActivity::class.java))
                             is MainMenu.NetEaseMusic -> startActivity(
@@ -99,7 +99,21 @@ private fun Greeting(
             }
         })
     }, drawerContent = {
-        Text(text = "Hello!")
+        Surface(
+            color = MaterialTheme.colors.primary
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp)
+            ) {
+                Text(
+                    text = "Compose Many",
+                    style = MaterialTheme.typography.h5,
+                    modifier = Modifier.align(Alignment.Center),
+                )
+            }
+        }
     }, scaffoldState = scaffoldState, backgroundColor = Color.LightGray.copy(alpha = 0.3f)) {
         LazyVerticalGrid(cells = GridCells.Fixed(count = 3)) {
             items(menuList) {

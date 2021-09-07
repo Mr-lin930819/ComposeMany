@@ -4,9 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -15,6 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -100,6 +102,7 @@ private fun PlaySong(
             })
         }
     ) {
+        //模糊虚化的封面作为背景
         Image(painter = rememberImagePainter(song?.picUrl?.limitSize(200), builder = {
             transformations(BlurTransformation(LocalContext.current, 20f))
         }), contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.FillHeight)
@@ -109,13 +112,23 @@ private fun PlaySong(
                     .fillMaxWidth()
                     .padding(36.dp)
             ) {
+                //唱片旋转角度
+                val rotation = infiniteRotation(isPlaying)
+                //唱针旋转角度
+                val stylusRotation by animateFloatAsState(targetValue = if (isPlaying) 0f else -30f)
+                //歌曲封面
                 Image(
                     painter = rememberImagePainter(song?.picUrl?.limitSize(200), builder = {
                         transformations(CircleCropTransformation())
-                    }), contentDescription = null, modifier = Modifier
+                    }), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier
                         .align(Alignment.Center)
                         .height(160.dp)
+                        .padding(8.dp)
+                        .graphicsLayer {
+                            rotationZ = rotation.value
+                        }
                 )
+                //唱片边框
                 Image(
                     painter = painterResource(id = R.drawable.bet),
                     contentDescription = null,
@@ -124,6 +137,19 @@ private fun PlaySong(
                         .align(
                             Alignment.Center
                         )
+                )
+                //唱片针
+                Image(
+                    painter = painterResource(id = R.drawable.bgm),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .height(80.dp)
+                        .padding(bottom = 20.dp)
+                        .align(BiasAlignment(0.0f, 1f))
+                        .graphicsLayer {
+                            rotationZ = stylusRotation
+                            transformOrigin = TransformOrigin(0f, 0f)
+                        }
                 )
             }
             //歌词显示
@@ -193,6 +219,29 @@ private fun PlaySong(
             }
         }
     }
+}
+
+/**
+ * 无限循环的旋转动画
+ */
+@Composable
+private fun infiniteRotation(startRotate: Boolean, duration: Int = 15 * 1000): Animatable<Float, AnimationVector1D> {
+    var rotation by remember { mutableStateOf(Animatable(0f)) }
+    LaunchedEffect(key1 = startRotate, block = {
+        if (startRotate) {
+            //从上次的暂停角度 -> 执行动画 -> 到目标角度（+360°）
+            rotation.animateTo(
+                (rotation.value % 360f) + 360f, animationSpec = infiniteRepeatable(
+                    animation = tween(duration, easing = LinearEasing)
+                )
+            )
+        } else {
+            rotation.stop()
+            //初始角度取余是为了防止每次暂停后目标角度无限增大
+            rotation = Animatable(rotation.value % 360f)
+        }
+    })
+    return rotation
 }
 
 private sealed class Event {
