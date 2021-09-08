@@ -37,7 +37,7 @@ fun PlayListWidget(
         picUrl?.run { PlayListCover(playCount = playCount, url = this) }
         index?.run { Text(text = toString()) }
         Spacer(modifier = Modifier.height(5.dp))
-        Text(text = text, maxLines = lines, overflow = overflow)
+        Text(text = text, maxLines = lines, overflow = overflow, fontSize = 12.sp)
         subText?.run {
             Spacer(modifier = Modifier.height(2.dp))
             Text(

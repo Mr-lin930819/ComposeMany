@@ -31,7 +31,7 @@ fun PlayWidget(viewModel: PlaySongsViewModel = viewModel(), onClick: () -> Unit)
     val curSong = allSongs.getOrNull(curIndex)
     Box(
         modifier = Modifier
-            .height(80.dp)
+            .height(72.dp)
             .fillMaxWidth()
             .background(color = Color.White)
             .border(1.dp, color = Color.LightGray)

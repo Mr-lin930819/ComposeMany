@@ -1,29 +1,30 @@
 package com.mrlin.composemany.pages.music.home
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.rememberImagePainter
-import coil.transform.CircleCropTransformation
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
-import com.mrlin.composemany.repository.entity.Account
-import com.mrlin.composemany.repository.entity.Profile
+import com.mrlin.composemany.pages.music.widgets.CircleAvatar
 import com.mrlin.composemany.repository.entity.User
 import com.mrlin.composemany.ui.theme.ComposeManyTheme
+import com.mrlin.composemany.ui.theme.LightGray
 import kotlinx.coroutines.launch
-import java.util.*
 
 /*********************************
  * 音乐主页
@@ -32,45 +33,126 @@ import java.util.*
  ******************************** */
 @Composable
 fun MusicHome(
-    user: User?, musicHomeViewModel: MusicHomeViewModel = hiltViewModel(), onToScreen: ((Any) -> Unit)? = null
+    user: User?,
+    musicHomeViewModel: MusicHomeViewModel = hiltViewModel(),
+    onToScreen: ((Any) -> Unit)? = null
 ) {
-    Home(user, musicHomeViewModel, onToScreen = onToScreen)
+    val scaffoldState = rememberScaffoldState()
+    val coroutineScope = rememberCoroutineScope()
+    Scaffold(
+        drawerContent = { Drawer(user = user) },
+        scaffoldState = scaffoldState
+    ) {
+        Home(musicHomeViewModel, onDrawerClick = {
+            coroutineScope.launch {
+                scaffoldState.drawerState.open()
+            }
+        }, onToScreen = onToScreen)
+    }
+}
+
+@Composable
+private fun Drawer(user: User?) {
+    Column(
+        Modifier
+            .background(LightGray)
+            .padding(16.dp)
+            .fillMaxSize()
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            CircleAvatar(url = user?.profile?.avatarUrl)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text = "${user?.profile?.nickname.orEmpty()} >")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Column(
+            Modifier
+                .clip(RoundedCornerShape(10.dp))
+                .background(Color.White)
+        ) {
+            DrawerItem(title = "设置")
+            Divider()
+            DrawerItem(title = "夜间模式")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Column(
+            Modifier
+                .clip(RoundedCornerShape(10.dp))
+                .background(Color.White)
+        ) {
+            DrawerItem(title = "我的订单")
+            Divider()
+            DrawerItem(title = "关于")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(10.dp))
+                .background(Color.White)
+                .padding(16.dp)
+        ) {
+            Text(text = "退出登录/关闭", color = Color.Red)
+        }
+    }
+}
+
+@Composable
+private fun DrawerItem(title: String) {
+    Row(modifier = Modifier.padding(16.dp)) {
+        Icon(imageVector = Icons.Default.Email, contentDescription = null)
+        Text(text = title, modifier = Modifier.padding(start = 16.dp))
+        Spacer(modifier = Modifier.weight(1f))
+        Icon(
+            imageVector = Icons.Default.KeyboardArrowRight,
+            contentDescription = null,
+            tint = Color.LightGray
+        )
+    }
 }
 
 @Composable
 @OptIn(ExperimentalPagerApi::class)
 private fun Home(
-    user: User?,
     vm: MusicHomeViewModel? = null,
+    onDrawerClick: (() -> Unit)? = null,
     onToScreen: ((Any) -> Unit)? = null
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = Color.White)
+            .background(color = LightGray)
     ) {
         val discoveryViewData by vm?.discoveryData?.collectAsState() ?: return
         val myPlayList by vm?.myPlayList?.collectAsState() ?: return
         Row(
             Modifier
-                .fillMaxHeight(0.12f)
+                .height(56.dp)
                 .fillMaxWidth()
-                .background(color = MaterialTheme.colors.primary)
-                .padding(10.dp), verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Image(
-                painter = rememberImagePainter(user?.profile?.avatarUrl.orEmpty(),
-                    builder = {
-                        transformations(CircleCropTransformation())
-                    }), contentDescription = null
-            )
-            Column {
-                Text(text = user?.profile?.nickname.orEmpty(), style = MaterialTheme.typography.h5)
+            IconButton(onClick = { onDrawerClick?.invoke() }, modifier = Modifier.size(36.dp)) {
+                Icon(Icons.Default.Menu, contentDescription = null, tint = Color.Gray)
             }
-            IconButton(onClick = { /*TODO*/ }, modifier = Modifier.size(30.dp, 30.dp)) {
-                Icon(Icons.Default.Search, contentDescription = null, tint = Color.White)
+            Spacer(modifier = Modifier.width(8.dp))
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(50))
+                    .background(Color.White)
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = null,
+                    tint = Color.LightGray
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = "大家都在搜 陈奕迅", color = Color.LightGray)
             }
+            Spacer(modifier = Modifier.width(8.dp))
         }
         val pages: List<Pair<String, @Composable () -> Unit>> = listOf(
             "发现" to { Discovery(discoveryViewData, onToScreen = onToScreen) },
@@ -79,7 +161,7 @@ private fun Home(
         )
         val pagerState = rememberPagerState(pageCount = 3)
         val pagerScope = rememberCoroutineScope()
-        TabRow(selectedTabIndex = pagerState.currentPage, backgroundColor = Color.White) {
+        TabRow(selectedTabIndex = pagerState.currentPage, backgroundColor = Color.Transparent) {
             pages.forEachIndexed { index, page ->
                 Tab(tab = page.first, selected = index == pagerState.currentPage) {
                     pagerScope.launch { pagerState.scrollToPage(index) }
@@ -112,30 +194,6 @@ private fun NewAction() {
 @Composable
 fun MusicHomePagePreview() {
     ComposeManyTheme {
-        Home(
-            user = User(
-                0, 200, Account(
-                    id = 0,
-                    userName = "测试",
-                    type = 0,
-                    status = 200,
-                    whitelistAuthority = 0,
-                    createTime = Date().time.toInt(),
-                    salt = "",
-                    tokenVersion = 0,
-                    ban = 0,
-                    baoyueVersion = 0,
-                    donateVersion = 0,
-                    vipType = 0,
-                    viptypeVersion = 0,
-                    anonimousUser = false
-                ), Profile(
-                    "",
-                    "你好",
-                    "",
-                    signature = "我的app"
-                )
-            )
-        )
+        Home()
     }
 }

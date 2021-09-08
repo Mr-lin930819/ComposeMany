@@ -85,7 +85,7 @@ class CommentsFragment : Fragment() {
                         modifier = Modifier
                             .height(48.dp)
                             .border(width = 0.5.dp, color = Color.LightGray)
-                            .padding(8.dp), verticalAlignment = Alignment.CenterVertically
+                            .padding(10.dp), verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(text = "这一次也许就是你上热评了", color = Color.LightGray)
                         Spacer(modifier = Modifier.weight(1f))

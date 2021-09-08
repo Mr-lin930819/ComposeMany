@@ -38,6 +38,7 @@ import com.mrlin.composemany.R
 import com.mrlin.composemany.pages.music.MusicScreen
 import com.mrlin.composemany.pages.music.PlaySongsViewModel
 import com.mrlin.composemany.pages.music.home.composeContent
+import com.mrlin.composemany.pages.music.widgets.MiniButton
 import com.mrlin.composemany.repository.entity.Song
 import com.mrlin.composemany.repository.entity.SongCommentData
 import com.mrlin.composemany.repository.entity.limitSize
@@ -222,20 +223,6 @@ private fun PlaySong(
                 MiniButton(R.drawable.icon_play_songs)
             }
         }
-    }
-}
-
-/**
- * 界面操作的小按键
- */
-@Composable
-private fun MiniButton(@DrawableRes iconRes: Int, onClick: () -> Unit = { }) {
-    IconButton(onClick = onClick) {
-        Icon(
-            painter = painterResource(id = iconRes),
-            contentDescription = null,
-            tint = Color.LightGray
-        )
     }
 }
 
