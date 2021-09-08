@@ -12,10 +12,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -24,10 +26,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.whenStarted
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.fragment.findNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.mrlin.composemany.R
@@ -57,37 +55,17 @@ class NetEaseMusicHomeFragment : Fragment() {
                 color = Blue500
             )
         }
-        val navController = rememberNavController()
         ComposeManyTheme {
-            var navAlpha by remember { mutableStateOf(0f) }
-            LaunchedEffect(key1 = true, block = {
-                lifecycle.whenStarted { navAlpha = 1.0f }
-            })
-            NavHost(
-                navController = navController,
-                startDestination = HomeScreen.Home.route,
-                modifier = Modifier.alpha(navAlpha)
-            ) {
-                composable(HomeScreen.Home.route) {
-                    val userState by viewModel.userState.collectAsState()
-                    Crossfade(targetState = userState) {
-                        when (it) {
-                            is MusicHomeState.Splash -> MusicSplash()
-                            is MusicHomeState.Visitor -> MusicLogin(viewModel)
-                            is MusicHomeState.Login -> MusicHome(it.user) { screen ->
-                                when (screen) {
-                                    is MusicScreen -> findNavController().navigate(screen.directions)
-                                    is HomeScreen -> navController.navigate(screen.route)
-                                }
-                            }
+            val userState by viewModel.userState.collectAsState()
+            Crossfade(targetState = userState) {
+                when (it) {
+                    is MusicHomeState.Splash -> MusicSplash()
+                    is MusicHomeState.Visitor -> MusicLogin(viewModel)
+                    is MusicHomeState.Login -> MusicHome(it.user) { screen ->
+                        when (screen) {
+                            is MusicScreen -> findNavController().navigate(screen.directions)
                         }
                     }
-                }
-                composable(HomeScreen.DailySong.route) {
-                    Text(text = "每日推荐")
-                }
-                composable(HomeScreen.TopList.route) {
-                    Text(text = "排行榜")
                 }
             }
             when (val state = viewModel.viewState.collectAsState().value) {
@@ -121,7 +99,9 @@ internal fun Fragment.composeContent(content: @Composable () -> Unit): View =
         setViewCompositionStrategy(
             ViewCompositionStrategy.DisposeOnLifecycleDestroyed(viewLifecycleOwner)
         )
-        setContent(content = content)
+        setContent(content = {
+            ComposeManyTheme(content = content)
+        })
     }
 
 @Composable

@@ -18,19 +18,25 @@
 
     <action
         android:id="@+id/toMusicPlayListFragment"
-        app:destination="@id/musicPlayListFragment" />
+        app:destination="@id/musicPlayListFragment"
+        app:enterAnim="@android:anim/slide_in_left"
+        app:popExitAnim="@android:anim/slide_out_right" />
     <fragment
         android:id="@+id/playSongFragment"
         android:name="com.mrlin.composemany.pages.music.playsong.PlaySongFragment"
         android:label="PlaySongFragment">
         <action
             android:id="@+id/action_playSongFragment_to_commentsFragment"
-            app:destination="@id/commentsFragment" />
+            app:destination="@id/commentsFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
     </fragment>
 
     <action
         android:id="@+id/toPlaySongFragment"
-        app:destination="@id/playSongFragment" />
+        app:destination="@id/playSongFragment"
+        app:enterAnim="@anim/slide_in_down"
+        app:popExitAnim="@anim/slide_out_down" />
     <fragment
         android:id="@+id/commentsFragment"
         android:name="com.mrlin.composemany.pages.music.playsong.CommentsFragment"

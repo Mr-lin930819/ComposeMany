@@ -47,6 +47,8 @@ class MusicHomeViewModel @Inject constructor(
                 //已登录用户，则直接进入已登录状态
                 musicDb.userDao().findUser(userAccountId.toLong())?.run {
                     _userState.emit(MusicHomeState.Login(user = this))
+                    loadDiscoveryPage()
+                    loadMyMusicPage(user = this)
                     return@busyWork ViewState.Normal
                 }
             }
@@ -67,13 +69,15 @@ class MusicHomeViewModel @Inject constructor(
             musicSettings.updateData { it.toBuilder().setUserAccountId(user.accountId).build() }
             musicDb.userDao().insert(user = user)
             _userState.emit(MusicHomeState.Login(user))
+            loadDiscoveryPage()
+            loadMyMusicPage(user = this)
         } ?: throw Throwable("登录失败")
     }
 
     /**
      * 发现页数据载入
      */
-    fun loadDiscoveryPage() = busyWork(_viewState) {
+    private fun loadDiscoveryPage() = busyWork(_viewState) {
         val bannerCall = netEaseMusicApi.banners()
         val recommendDataCall = netEaseMusicApi.recommendResource()
         val topAlbumDataCall = netEaseMusicApi.topAlbums()
@@ -102,7 +106,7 @@ class MusicHomeViewModel @Inject constructor(
     /**
      * “我的”页面载入
      */
-    fun loadMyMusicPage(user: User?) = busyWork(_myPlayList) {
+    private fun loadMyMusicPage(user: User?) = busyWork(_myPlayList) {
         return@busyWork MyPlayListLoaded(
             netEaseMusicApi.selfPlaylistData(user?.accountId?.toLong() ?: 0).await().playlist, user
         )

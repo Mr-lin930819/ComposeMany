@@ -82,4 +82,18 @@ interface NetEaseMusicApi {
         //偏移数量 , 用于分页 , 如 :( 评论页数 -1)*20, 其中 20 为 limit 的值
         @Query("offset") offset: Int
     ): Call<SongCommentData>
+
+    /**
+     * 新的评论接口
+     */
+    @GET("/comment/new")
+    fun commentData(
+        @Query("id") id: Long,
+        @Query("type") type: CommentData.Type = CommentData.Type.SONG,
+        @Query("pageNo") pageNo: Int = 1,
+        @Query("pageSize") pageSize: Int = 20,
+        @Query("sortType") sortType: CommentData.SortType = CommentData.SortType.RECOMMEND,
+        //当sortType为3时且页数不是第一页时需传入,值为上一条数据的time
+        @Query("cursor") cursor: Long? = null
+    ): Call<CommentResponse>
 }

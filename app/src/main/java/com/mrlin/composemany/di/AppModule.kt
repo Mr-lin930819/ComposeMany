@@ -38,6 +38,7 @@ class AppModule {
     ): Retrofit = Retrofit.Builder()
         .baseUrl("https://mrlin-netease-cloud-music-api-iota-silk.vercel.app/")
         .addConverterFactory(GsonConverterFactory.create())
+        .addConverterFactory(EnumRetrofitConverterFactory())
         .client(OkHttpClient.Builder().cookieJar(PersistCookieJar(cookieDataStore)).build())
         .build()
 

@@ -51,10 +51,6 @@ private fun Home(
     ) {
         val discoveryViewData by vm?.discoveryData?.collectAsState() ?: return
         val myPlayList by vm?.myPlayList?.collectAsState() ?: return
-        LaunchedEffect(key1 = true, block = {
-            vm?.loadDiscoveryPage()
-            vm?.loadMyMusicPage(user)
-        })
         Row(
             Modifier
                 .fillMaxHeight(0.12f)
