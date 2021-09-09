@@ -34,6 +34,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun MusicHome(
     user: User?,
+    modifier: Modifier = Modifier,
     musicHomeViewModel: MusicHomeViewModel = hiltViewModel(),
     onToScreen: ((Any) -> Unit)? = null
 ) {
@@ -41,7 +42,8 @@ fun MusicHome(
     val coroutineScope = rememberCoroutineScope()
     Scaffold(
         drawerContent = { Drawer(user = user) },
-        scaffoldState = scaffoldState
+        scaffoldState = scaffoldState,
+        modifier = modifier
     ) {
         Home(musicHomeViewModel, onDrawerClick = {
             coroutineScope.launch {

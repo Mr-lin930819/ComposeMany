@@ -96,4 +96,18 @@ interface NetEaseMusicApi {
         //当sortType为3时且页数不是第一页时需传入,值为上一条数据的time
         @Query("cursor") cursor: Long? = null
     ): Call<CommentResponse>
+
+    /**
+     * 楼层评论
+     */
+    @GET("/comment/floor")
+    fun floorComment(
+        //楼层评论 id
+        @Query("parentCommentId") parentCommentId: Long,
+        //资源 id
+        @Query("id") id: Long,
+        @Query("type") type: CommentData.Type = CommentData.Type.SONG,
+        @Query("limit") limit: Int = 20,
+        @Query("time") time: Long? = null,
+    ): Call<FloorCommentResponse>
 }

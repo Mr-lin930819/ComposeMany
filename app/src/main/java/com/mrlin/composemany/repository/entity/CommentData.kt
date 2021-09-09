@@ -21,6 +21,11 @@ data class CommentResponse(
     val data: CommentData,
 )
 
+data class FloorCommentResponse(
+    val code: Int = 0,
+    val data: FloorCommentData,
+)
+
 data class CommentData(
     val totalCount: Int = 0,
     val hasMore: Boolean = false,
@@ -50,6 +55,17 @@ data class CommentData(
     }
 }
 
+/**
+ * 楼层评论
+ */
+data class FloorCommentData(
+    val hasMore: Boolean = false,
+    val totalCount: Int = 0,
+    val time: Long = 0L,
+    val comments: List<Comment> = emptyList(),
+    val ownerComment: Comment? = null,
+)
+
 data class Comment(
     val user: CommentUser,
     val content: String = "",
@@ -57,6 +73,7 @@ data class Comment(
     val likedCount: Int = 0,
     val showFloorComment: FloorComment? = null,
     val tag: Tag? = null,
+    val commentId: Long = 0L,
 ) {
     data class Tag(
         val datas: List<TagData>? = null,

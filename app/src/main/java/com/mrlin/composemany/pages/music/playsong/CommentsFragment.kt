@@ -4,19 +4,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,17 +25,17 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import com.mrlin.composemany.R
 import com.mrlin.composemany.pages.music.home.composeContent
 import com.mrlin.composemany.pages.music.widgets.CircleAvatar
-import com.mrlin.composemany.repository.entity.Comment
-import com.mrlin.composemany.repository.entity.CommentData
-import com.mrlin.composemany.repository.entity.CommentUser
-import com.mrlin.composemany.repository.entity.Song
+import com.mrlin.composemany.pages.music.widgets.MiniButton
+import com.mrlin.composemany.repository.entity.*
 import com.mrlin.composemany.utils.simpleNumText
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -50,6 +47,7 @@ class CommentsFragment : Fragment() {
     private val args by navArgs<CommentsFragmentArgs>()
     private val viewModel by viewModels<CommentsViewModel>()
 
+    @ExperimentalMaterialApi
     @OptIn(ExperimentalFoundationApi::class)
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -60,37 +58,70 @@ class CommentsFragment : Fragment() {
         val commentCount by viewModel.commentCount.collectAsState()
         val commentList = viewModel.commentsPager.flow.collectAsLazyPagingItems()
         val sortType by viewModel.commentSortType.collectAsState()
+        val floorComment by viewModel.floorComment.collectAsState()
+        val sheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
+        val scope = rememberCoroutineScope()
+
         LaunchedEffect(key1 = sortType, block = { commentList.refresh() })
         ProvideTextStyle(value = MaterialTheme.typography.body2) {
-            Scaffold(
-                topBar = {
-                    TopAppBar(title = {
-                        Text(text = "评论(${commentCount})")
-                    }, navigationIcon = {
-                        IconButton(onClick = { findNavController().navigateUp() }) {
-                            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
-                        }
-                    })
-                }
+            ModalBottomSheetLayout(
+                sheetContent = { ReplySheet(floorComment) },
+                sheetState = sheetState,
+                sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
             ) {
-                Column {
-                    LazyColumn(modifier = Modifier.weight(1f)) {
-                        item { SongInfoArea(song) }
-                        stickyHeader {
-                            CommentListTitle(sortType) { viewModel.changeRankType(it) }
-                        }
-                        items(commentList) { CommentItem(it) }
+                CommentMain(song, commentCount, commentList, sortType) {
+                    viewModel.loadFloorReply(it.commentId)
+                    scope.launch { sheetState.show() }
+                }
+            }
+            BackHandler(sheetState.currentValue != ModalBottomSheetValue.Hidden) {
+                scope.launch { sheetState.hide() }
+            }
+        }
+    }
+
+    /**
+     * 评论主界面
+     */
+    @ExperimentalFoundationApi
+    @Composable
+    private fun CommentMain(
+        song: Song,
+        commentCount: Int,
+        commentList: LazyPagingItems<Comment>,
+        sortType: CommentData.SortType,
+        onEnterFloor: (Comment) -> Unit
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(title = {
+                    Text(text = "评论(${commentCount})")
+                }, navigationIcon = {
+                    IconButton(onClick = { findNavController().navigateUp() }) {
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
                     }
-                    Row(
-                        modifier = Modifier
-                            .height(48.dp)
-                            .border(width = 0.5.dp, color = Color.LightGray)
-                            .padding(10.dp), verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = "这一次也许就是你上热评了", color = Color.LightGray)
-                        Spacer(modifier = Modifier.weight(1f))
-                        Text(text = "发送", color = Color.LightGray)
+                })
+            }
+        ) {
+            Column {
+                LazyColumn(modifier = Modifier.weight(1f)) {
+                    item { SongInfoArea(song) }
+                    stickyHeader {
+                        CommentListTitle(sortType) { viewModel.changeRankType(it) }
                     }
+                    items(commentList) {
+                        CommentItem(it) { it?.run(onEnterFloor) }
+                    }
+                }
+                Row(
+                    modifier = Modifier
+                        .height(48.dp)
+                        .border(width = 0.5.dp, color = Color.LightGray)
+                        .padding(10.dp), verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = "这一次也许就是你上热评了", color = Color.LightGray)
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(text = "发送", color = Color.LightGray)
                 }
             }
         }
@@ -154,7 +185,7 @@ class CommentsFragment : Fragment() {
      * 评论
      */
     @Composable
-    private fun CommentItem(it: Comment?) {
+    private fun CommentItem(it: Comment?, onClickReply: () -> Unit) {
         if (it == null) {
             Box(
                 modifier = Modifier
@@ -170,17 +201,27 @@ class CommentsFragment : Fragment() {
             CommentTitle(comment = it, user = user)
             Text(
                 text = it.content,
-                modifier = Modifier.padding(end = 8.dp, start = contentPaddingStart, top = 8.dp, bottom = 8.dp)
+                modifier = Modifier.padding(
+                    end = 8.dp,
+                    start = contentPaddingStart,
+                    top = 8.dp,
+                    bottom = 8.dp
+                )
             )
             it.showFloorComment?.replyCount?.takeIf { it > 0 }?.let {
                 Text(
                     text = "${it}条回复 >",
                     color = Color(0xFF0288D1),
-                    modifier = Modifier.padding(start = contentPaddingStart),
+                    modifier = Modifier
+                        .padding(start = contentPaddingStart)
+                        .clickable(onClick = onClickReply),
                     fontSize = 14.sp
                 )
             }
-            Divider(modifier = Modifier.padding(start = contentPaddingStart, top = 16.dp), thickness = 0.5.dp)
+            Divider(
+                modifier = Modifier.padding(start = contentPaddingStart, top = 16.dp),
+                thickness = 0.5.dp
+            )
         }
     }
 
@@ -218,6 +259,44 @@ class CommentsFragment : Fragment() {
                     .padding(4.dp)
                     .size(16.dp)
             )
+        }
+    }
+
+    /**
+     * 回复楼层评论
+     */
+    @ExperimentalFoundationApi
+    @ExperimentalMaterialApi
+    @Composable
+    private fun ReplySheet(reply: FloorCommentData) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxHeight(0.8f)
+                .fillMaxWidth()
+                .padding(16.dp)
+                .background(color = MaterialTheme.colors.surface)
+        ) {
+            stickyHeader {
+                Surface(Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "回复(${reply.totalCount})",
+                        fontSize = 18.sp,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                }
+            }
+            reply.ownerComment?.let { ownerComment ->
+                item {
+                    Column {
+                        CommentItem(ownerComment) {}
+                        Text(text = "全部回复", fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
+            }
+            items(reply.comments) {
+                CommentItem(it) {}
+            }
         }
     }
 }

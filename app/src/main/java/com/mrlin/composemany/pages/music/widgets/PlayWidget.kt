@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberImagePainter
@@ -25,13 +26,13 @@ import com.mrlin.composemany.pages.music.PlaySongsViewModel
  * 页面下面的播放条
  */
 @Composable
-fun PlayWidget(viewModel: PlaySongsViewModel = viewModel(), onClick: () -> Unit) {
+fun PlayWidget(viewModel: PlaySongsViewModel = viewModel(), height: Dp = 72.dp, onClick: () -> Unit) {
     val allSongs by viewModel.allSongs.collectAsState()
     val curIndex by viewModel.curIndex.collectAsState()
     val curSong = allSongs.getOrNull(curIndex)
     Box(
         modifier = Modifier
-            .height(72.dp)
+            .height(height)
             .fillMaxWidth()
             .background(color = Color.White)
             .border(1.dp, color = Color.LightGray)

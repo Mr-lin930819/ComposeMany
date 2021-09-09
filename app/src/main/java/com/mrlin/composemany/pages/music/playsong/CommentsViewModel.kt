@@ -2,6 +2,7 @@ package com.mrlin.composemany.pages.music.playsong
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingSource
@@ -9,10 +10,12 @@ import androidx.paging.PagingState
 import com.mrlin.composemany.repository.NetEaseMusicApi
 import com.mrlin.composemany.repository.entity.Comment
 import com.mrlin.composemany.repository.entity.CommentData
+import com.mrlin.composemany.repository.entity.FloorCommentData
 import com.mrlin.composemany.repository.entity.Song
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import retrofit2.await
 import javax.inject.Inject
 
@@ -26,9 +29,11 @@ class CommentsViewModel @Inject constructor(
 ) : ViewModel() {
     private val _commentCount = MutableStateFlow(0)
     private val _commentSortType = MutableStateFlow(CommentData.SortType.RECOMMEND)
+    private val _floorComment = MutableStateFlow(FloorCommentData())
 
     val commentCount: StateFlow<Int> = _commentCount
     val commentSortType: StateFlow<CommentData.SortType> = _commentSortType
+    val floorComment: StateFlow<FloorCommentData> = _floorComment
     private val _song = savedStateHandle.get<Song>("song")
 
     var commentsPager = Pager(
@@ -39,6 +44,21 @@ class CommentsViewModel @Inject constructor(
 
     fun changeRankType(commentRankType: CommentData.SortType) {
         _commentSortType.value = commentRankType
+    }
+
+    /**
+     * 载入楼层回复评论
+     */
+    fun loadFloorReply(commentId: Long) = viewModelScope.launch {
+        try {
+            _floorComment.value = FloorCommentData()
+            val floorComment = musicApi.floorComment(commentId, _song?.id ?: 0).await()
+            if (floorComment.code == 200) {
+                _floorComment.value = floorComment.data
+            }
+        } catch (t: Throwable) {
+
+        }
     }
 
     private class CommentsPagingSource(

@@ -7,9 +7,7 @@ import android.view.ViewGroup
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -25,12 +23,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.mrlin.composemany.R
 import com.mrlin.composemany.pages.music.MusicScreen
+import com.mrlin.composemany.pages.music.PlaySongsViewModel
 import com.mrlin.composemany.pages.music.login.MusicLogin
+import com.mrlin.composemany.pages.music.widgets.PlayWidget
 import com.mrlin.composemany.state.ViewState
 import com.mrlin.composemany.ui.theme.Blue500
 import com.mrlin.composemany.ui.theme.ComposeManyTheme
@@ -44,6 +45,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class NetEaseMusicHomeFragment : Fragment() {
     private val viewModel by viewModels<MusicHomeViewModel>()
+    private val playSongViewModel by activityViewModels<PlaySongsViewModel>()
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -57,13 +59,22 @@ class NetEaseMusicHomeFragment : Fragment() {
         }
         ComposeManyTheme {
             val userState by viewModel.userState.collectAsState()
+            val playList by playSongViewModel.allSongs.collectAsState()
             Crossfade(targetState = userState) {
                 when (it) {
                     is MusicHomeState.Splash -> MusicSplash()
                     is MusicHomeState.Visitor -> MusicLogin(viewModel)
-                    is MusicHomeState.Login -> MusicHome(it.user) { screen ->
-                        when (screen) {
-                            is MusicScreen -> findNavController().navigate(screen.directions)
+                    is MusicHomeState.Login -> Column {
+                        MusicHome(it.user, modifier = Modifier.weight(1f)) { screen ->
+                            when (screen) {
+                                is MusicScreen -> findNavController().navigate(screen.directions)
+                            }
+                        }
+                        if (playList.isNotEmpty()) {
+                            //有播放歌单时显示播放控件
+                            PlayWidget(playSongViewModel, height = 56.dp) {
+                                findNavController().navigate(MusicScreen.PlaySong().directions)
+                            }
                         }
                     }
                 }
