@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -60,28 +59,26 @@ class PlaySongFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        return composeContent {
-            val curSongIndex by playSongViewModel.curIndex.collectAsState()
-            val curSong = playSongViewModel.allSongs.value.getOrNull(curSongIndex)
-            val curProgress by playSongViewModel.curProgress.collectAsState()
-            val isPlaying by playSongViewModel.isPlaying.collectAsState()
-            val commentData by viewModel.songComment.collectAsState()
-            LaunchedEffect(key1 = curSong, block = {
-                //歌曲更换后自动载入对应评论
-                viewModel.loadComment(curSong ?: return@LaunchedEffect)
-            })
-            ComposeManyTheme {
-                PlaySong(song = curSong, curProgress, isPlaying, commentData) {
-                    when (it) {
-                        is Event.TrySeek -> playSongViewModel.trySeek(it.progress)
-                        is Event.Seek -> playSongViewModel.seekPlay()
-                        is Event.TogglePlay -> playSongViewModel.togglePlay()
-                        is Event.Back -> findNavController().navigateUp()
-                        is Event.ToComments -> findNavController().navigate(
-                            MusicScreen.SongComment(curSong ?: return@PlaySong).directions
-                        )
-                    }
+    ): View = composeContent {
+        val curSongIndex by playSongViewModel.curIndex.collectAsState()
+        val curSong = playSongViewModel.allSongs.value.getOrNull(curSongIndex)
+        val curProgress by playSongViewModel.curProgress.collectAsState()
+        val isPlaying by playSongViewModel.isPlaying.collectAsState()
+        val commentData by viewModel.songComment.collectAsState()
+        LaunchedEffect(key1 = curSong, block = {
+            //歌曲更换后自动载入对应评论
+            viewModel.loadComment(curSong ?: return@LaunchedEffect)
+        })
+        ComposeManyTheme {
+            PlaySong(song = curSong, curProgress, isPlaying, commentData) {
+                when (it) {
+                    is Event.TrySeek -> playSongViewModel.trySeek(it.progress)
+                    is Event.Seek -> playSongViewModel.seekPlay()
+                    is Event.TogglePlay -> playSongViewModel.togglePlay()
+                    is Event.Back -> findNavController().navigateUp()
+                    is Event.ToComments -> findNavController().navigate(
+                        MusicScreen.SongComment(curSong ?: return@PlaySong).directions
+                    )
                 }
             }
         }

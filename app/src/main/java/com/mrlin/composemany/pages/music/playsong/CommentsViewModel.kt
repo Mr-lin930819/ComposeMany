@@ -57,7 +57,7 @@ class CommentsViewModel @Inject constructor(
                 _floorComment.value = floorComment.data
             }
         } catch (t: Throwable) {
-
+            t.printStackTrace()
         }
     }
 

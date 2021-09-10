@@ -5,7 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -18,7 +21,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
@@ -31,8 +37,8 @@ import androidx.paging.compose.items
 import com.mrlin.composemany.R
 import com.mrlin.composemany.pages.music.home.composeContent
 import com.mrlin.composemany.pages.music.widgets.CircleAvatar
-import com.mrlin.composemany.pages.music.widgets.MiniButton
 import com.mrlin.composemany.repository.entity.*
+import com.mrlin.composemany.ui.theme.LightGray
 import com.mrlin.composemany.utils.simpleNumText
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -185,8 +191,8 @@ class CommentsFragment : Fragment() {
      * 评论
      */
     @Composable
-    private fun CommentItem(it: Comment?, onClickReply: () -> Unit) {
-        if (it == null) {
+    private fun CommentItem(comment: Comment?, excludeRepliedId: Long? = null, onClickReply: () -> Unit) {
+        if (comment == null) {
             Box(
                 modifier = Modifier
                     .height(48.dp)
@@ -195,12 +201,12 @@ class CommentsFragment : Fragment() {
             )
             return
         }
-        val user = it.user
+        val user = comment.user
         val contentPaddingStart = 44.dp
         Column(modifier = Modifier.padding(8.dp)) {
-            CommentTitle(comment = it, user = user)
+            CommentTitle(comment = comment, user = user)
             Text(
-                text = it.content,
+                text = comment.content,
                 modifier = Modifier.padding(
                     end = 8.dp,
                     start = contentPaddingStart,
@@ -208,7 +214,33 @@ class CommentsFragment : Fragment() {
                     bottom = 8.dp
                 )
             )
-            it.showFloorComment?.replyCount?.takeIf { it > 0 }?.let {
+            comment.beReplied?.firstOrNull()?.takeIf {
+                it.status >= 0 && it.content.orEmpty().isNotEmpty() && it.beRepliedCommentId != excludeRepliedId
+            }?.let { beReplied ->
+                Row(
+                    Modifier
+                        .padding(start = contentPaddingStart, end = 8.dp, top = 8.dp, bottom = 8.dp)
+                        .height(IntrinsicSize.Min),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Divider(
+                        Modifier
+                            .fillMaxHeight()
+                            .width(2.dp),
+                        color = LightGray
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = buildAnnotatedString {
+                        withStyle(style = SpanStyle(color = Color(0xFF0288D1))) {
+                            append("@${beReplied.user.nickname}: ")
+                        }
+                        withStyle(style = SpanStyle(color = Color.Gray)) {
+                            append(beReplied.content.orEmpty())
+                        }
+                    })
+                }
+            }
+            comment.showFloorComment?.replyCount?.takeIf { it > 0 }?.let {
                 Text(
                     text = "${it}条回复 >",
                     color = Color(0xFF0288D1),
@@ -295,7 +327,7 @@ class CommentsFragment : Fragment() {
                 }
             }
             items(reply.comments) {
-                CommentItem(it) {}
+                CommentItem(it, excludeRepliedId = reply.ownerComment?.commentId) {}
             }
         }
     }

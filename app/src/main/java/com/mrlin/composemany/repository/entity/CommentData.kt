@@ -74,6 +74,7 @@ data class Comment(
     val showFloorComment: FloorComment? = null,
     val tag: Tag? = null,
     val commentId: Long = 0L,
+    val beReplied: List<BeReplied>? = null,
 ) {
     data class Tag(
         val datas: List<TagData>? = null,
@@ -93,4 +94,14 @@ data class CommentUser(
     val nickname: String = "",
     val userId: Long = 0,
     val avatarUrl: String? = null,
+)
+
+/**
+ * 引用回复
+ */
+data class BeReplied(
+    val user: CommentUser,
+    val content: String? = null,
+    val status: Int = 0,
+    val beRepliedCommentId: Long = 0,
 )
