@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,19 +13,25 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.PlayArrow
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -36,18 +43,23 @@ import coil.request.CachePolicy
 import coil.request.ImageRequest
 import coil.transform.BlurTransformation
 import coil.transform.RoundedCornersTransformation
+import com.mrlin.composemany.R
 import com.mrlin.composemany.pages.music.MusicScreen
 import com.mrlin.composemany.pages.music.PlaySongsViewModel
 import com.mrlin.composemany.pages.music.home.composeContent
+import com.mrlin.composemany.pages.music.widgets.CircleAvatar
+import com.mrlin.composemany.pages.music.widgets.MiniButton
 import com.mrlin.composemany.pages.music.widgets.PlayListCover
 import com.mrlin.composemany.pages.music.widgets.PlayWidget
-import com.mrlin.composemany.repository.entity.*
+import com.mrlin.composemany.repository.entity.MusicData
+import com.mrlin.composemany.repository.entity.Recommend
+import com.mrlin.composemany.repository.entity.Song
+import com.mrlin.composemany.repository.entity.limitSize
 import com.mrlin.composemany.state.ViewState
 import com.mrlin.composemany.ui.theme.ComposeManyTheme
+import com.mrlin.composemany.ui.theme.LightGray
 import dagger.hilt.android.AndroidEntryPoint
-import me.onebone.toolbar.CollapsingToolbarScaffold
-import me.onebone.toolbar.ScrollStrategy
-import me.onebone.toolbar.rememberCollapsingToolbarScaffoldState
+import me.onebone.toolbar.*
 
 /*********************************
  * 音乐播放列表
@@ -60,6 +72,7 @@ class MusicPlayListFragment : Fragment() {
     private val viewModel by viewModels<MusicPlayListViewModel>()
     private val playSongsViewModel by activityViewModels<PlaySongsViewModel>()
 
+    @OptIn(ExperimentalFoundationApi::class)
     @Suppress("UnnecessaryVariable")
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -69,7 +82,7 @@ class MusicPlayListFragment : Fragment() {
         ComposeManyTheme {
             val recommend = args.recommend
             val playList by viewModel.playList.collectAsState()
-            val expandedHeight = 320.dp
+            val expandedHeight = 240.dp
 //            PlayListAppBar(recommend.name, expandedHeight = expandedHeight, background = {
 //                AppBarBackground(recommend = recommend)
 //            }, bottom = {
@@ -91,26 +104,9 @@ class MusicPlayListFragment : Fragment() {
                     modifier = Modifier.weight(1.0f),
                     state = state,
                     scrollStrategy = ScrollStrategy.ExitUntilCollapsed,
-                    toolbarModifier = Modifier.background(MaterialTheme.colors.primary),
                     toolbar = {
-                        Box(modifier = Modifier
-                            .fillMaxWidth()
-                            .parallax(0.5f)
-                            .height(expandedHeight)
-                            .graphicsLayer {
-                                alpha = state.toolbarState.progress
-                            }) {
-                            AppBarBackground(recommend = recommend)
-                        }
-                        Column(modifier = Modifier.road(
-                            Alignment.BottomCenter, Alignment.BottomCenter
-                        )) {
-                            TopAppBar(title = { Text(text = recommend.name) }, modifier = Modifier.graphicsLayer {
-                                alpha = if (state.toolbarState.progress == 0f) 1f else 0f
-                            })
-                            MusicListHeader {
-                                //播放全部
-                            }
+                        ProvideTextStyle(value = TextStyle(color = Color.White)) {
+                            ToolBar(expandedHeight, state, recommend)
                         }
                     }
                 ) {
@@ -119,6 +115,44 @@ class MusicPlayListFragment : Fragment() {
                 PlayWidget(playSongsViewModel) { findNavController().navigate(MusicScreen.PlaySong().directions) }
             }
 
+        }
+    }
+
+    @Composable
+    private fun CollapsingToolbarScope.ToolBar(
+        expandedHeight: Dp,
+        state: CollapsingToolbarScaffoldState,
+        recommend: Recommend
+    ) {
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .height(expandedHeight)
+            .graphicsLayer {
+                translationY = -(state.toolbarState.maxHeight - state.toolbarState.height)
+                    .coerceAtMost(
+                        (expandedHeight - 48.dp).roundToPx()
+                    )
+                    .toFloat()
+            }) {
+            AppBarBackground(recommend = recommend)
+        }
+        Row(
+            modifier = Modifier
+                .height(48.dp)
+                .road(
+                    Alignment.TopStart, Alignment.TopStart
+                ),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { findNavController().navigateUp() }) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = null,
+                    tint = Color.White
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(text = if (state.toolbarState.progress == 0f) recommend.name else "歌单™")
         }
     }
 }
@@ -135,12 +169,13 @@ private fun BoxScope.AppBarBackground(recommend: Recommend) {
             ImageRequest.Builder(context)
                 .data(recommend.picUrl.limitSize(160))
                 .diskCachePolicy(CachePolicy.DISABLED)
-                .transformations(BlurTransformation(context, radius = 20f))
+                .transformations(BlurTransformation(context, radius = 16f))
                 .build()
         ),
         contentDescription = null,
         contentScale = ContentScale.Crop,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        colorFilter = ColorFilter.tint(Color.Gray.copy(alpha = 0.5f), blendMode = BlendMode.Darken)
     )
     Row(
         modifier = Modifier
@@ -149,7 +184,6 @@ private fun BoxScope.AppBarBackground(recommend: Recommend) {
     ) {
         PlayListCover(
             url = recommend.picUrl,
-            width = 160f,
             playCount = recommend.playcount
         )
         Column(
@@ -159,22 +193,31 @@ private fun BoxScope.AppBarBackground(recommend: Recommend) {
         ) {
             Text(text = recommend.name, maxLines = 2)
             Row {
-                Image(
-                    painter = rememberImagePainter(
-                        recommend.creator?.avatarUrl?.limitSize(
-                            50
-                        ).orEmpty()
-                    ),
-                    contentDescription = null,
+                CircleAvatar(url = recommend.creator?.avatarUrl, size = 16.dp)
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = recommend.creator?.nickname.orEmpty(),
+                    color = LightGray,
+                    fontSize = 12.sp
                 )
-                Text(text = recommend.creator?.nickname.orEmpty())
             }
         }
     }
 }
 
+@ExperimentalFoundationApi
 @Composable
-private fun SongsList(playList: ViewState, playSongsViewModel: PlaySongsViewModel, topPadding: Dp = 0.dp) {
+private fun SongsList(
+    playList: ViewState,
+    playSongsViewModel: PlaySongsViewModel,
+    topPadding: Dp = 0.dp
+) {
+    val curPlayIndex by playSongsViewModel.curIndex.collectAsState()
+    val curPlaySong by remember(curPlayIndex) {
+        derivedStateOf {
+            playSongsViewModel.allSongs.value.getOrNull(curPlayIndex)
+        }
+    }
     when (playList) {
         is ViewState.Busy -> Box(
             modifier = Modifier
@@ -185,14 +228,21 @@ private fun SongsList(playList: ViewState, playSongsViewModel: PlaySongsViewMode
         }
         is MusicPlayListViewModel.PlayListState ->
             LazyColumn(contentPadding = PaddingValues(top = topPadding)) {
+                stickyHeader {
+                    MusicListHeader {
+                        //播放全部
+                    }
+                }
                 itemsIndexed(playList.data.tracks) { index, track ->
                     MusicListItem(
                         MusicData(
                             track.mv, index = index + 1, songName = track.name,
                             artists = "${
                                 track.ar.joinToString("/") { it.name }
-                            } - ${track.al.name}"
-                        )
+                            } - ${track.al.name}",
+                            musicId = track.id
+                        ),
+                        curSongId = curPlaySong?.id ?: 0
                     ) {
                         playSongsViewModel.playSongs(
                             playList.data.tracks
@@ -215,10 +265,10 @@ private fun SongsList(playList: ViewState, playSongsViewModel: PlaySongsViewMode
 }
 
 @Composable
-private fun MusicListItem(musicData: MusicData, onTap: (() -> Unit)? = null) {
+private fun MusicListItem(musicData: MusicData, curSongId: Long, onTap: (() -> Unit)? = null) {
     Row(
         modifier = Modifier
-            .height(80.dp)
+            .height(64.dp)
             .fillMaxWidth()
             .clickable(onTap != null) { onTap?.invoke() },
         verticalAlignment = Alignment.CenterVertically
@@ -236,16 +286,33 @@ private fun MusicListItem(musicData: MusicData, onTap: (() -> Unit)? = null) {
             )
         }
         musicData.index?.let {
-            Text(
-                text = it.toString(),
-                modifier = Modifier.width(40.dp),
-                textAlign = TextAlign.Center
-            )
+            //正在播放的显示图标，其他显示顺序数字
+            if (curSongId == musicData.musicId) {
+                Icon(
+                    painter = painterResource(id = R.drawable.icon_rank),
+                    contentDescription = null,
+                    tint = Color.Red,
+                    modifier = Modifier.size(40.dp)
+                )
+            } else {
+                Text(
+                    text = it.toString(),
+                    modifier = Modifier.width(40.dp),
+                    textAlign = TextAlign.Center
+                )
+            }
         }
-        Column {
-            Text(text = musicData.songName, maxLines = 1)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = musicData.artists, maxLines = 1)
+        Column(Modifier.weight(1f)) {
+            Text(text = musicData.songName, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(text = musicData.artists, maxLines = 1, style = MaterialTheme.typography.caption)
+        }
+        MiniButton(iconRes = R.drawable.icon_event_video_b_play, modifier = Modifier.size(20.dp))
+        IconButton(onClick = { /*TODO*/ }) {
+            Icon(
+                imageVector = Icons.Default.MoreVert,
+                contentDescription = null,
+                tint = Color.LightGray
+            )
         }
     }
 }
@@ -256,25 +323,24 @@ private fun MusicListHeader(
     onTap: (() -> Unit)? = null,
     tail: @Composable () -> Unit
 ) {
-    val color = Color.White
     Box(modifier = Modifier
-        .height(64.dp)
+        .height(48.dp)
+        .background(color = Color.White)
         .clickable(onTap != null) { onTap?.invoke() }) {
         Row(
             Modifier
                 .padding(start = 10.dp)
                 .align(Alignment.Center), verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Outlined.PlayArrow,
+            Image(
+                painter = painterResource(id = R.drawable.play_all),
                 contentDescription = null,
-                modifier = Modifier.size(36.dp, 36.dp),
-                tint = color
+                modifier = Modifier.size(24.dp),
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "播放全部", color = color)
+            Text(text = "播放全部", fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.width(5.dp))
-            count?.let { Text(text = "共${count}首", color = color) }
+            count?.let { Text(text = "共${count}首", style = MaterialTheme.typography.caption) }
             Spacer(modifier = Modifier.fillMaxWidth())
             tail()
         }

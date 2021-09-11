@@ -6,4 +6,5 @@ data class MusicData(
     val songName: String,
     val artists: String,
     val index: Int? = null,
+    val musicId: Long = 0,
 )

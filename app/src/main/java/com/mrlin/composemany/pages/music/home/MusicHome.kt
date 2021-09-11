@@ -6,6 +6,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -14,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -72,9 +77,9 @@ private fun Drawer(user: User?) {
                 .clip(RoundedCornerShape(10.dp))
                 .background(Color.White)
         ) {
-            DrawerItem(title = "设置")
+            DrawerItem(title = "设置", Icons.Outlined.Settings)
             Divider()
-            DrawerItem(title = "夜间模式")
+            DrawerItem(title = "夜间模式", Icons.Outlined.Check)
         }
         Spacer(modifier = Modifier.height(16.dp))
         Column(
@@ -82,9 +87,9 @@ private fun Drawer(user: User?) {
                 .clip(RoundedCornerShape(10.dp))
                 .background(Color.White)
         ) {
-            DrawerItem(title = "我的订单")
+            DrawerItem(title = "我的订单", Icons.Outlined.MoreVert)
             Divider()
-            DrawerItem(title = "关于")
+            DrawerItem(title = "关于", Icons.Outlined.Info)
         }
         Spacer(modifier = Modifier.height(16.dp))
         Column(
@@ -100,9 +105,11 @@ private fun Drawer(user: User?) {
 }
 
 @Composable
-private fun DrawerItem(title: String) {
+private fun DrawerItem(title: String, imageVector: ImageVector? = null) {
     Row(modifier = Modifier.padding(16.dp)) {
-        Icon(imageVector = Icons.Default.Email, contentDescription = null)
+        imageVector?.let {
+            Icon(imageVector = it, contentDescription = null)
+        }
         Text(text = title, modifier = Modifier.padding(start = 16.dp))
         Spacer(modifier = Modifier.weight(1f))
         Icon(

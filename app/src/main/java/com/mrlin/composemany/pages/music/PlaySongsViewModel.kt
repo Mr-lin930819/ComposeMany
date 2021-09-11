@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.await
+import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -38,11 +39,17 @@ class PlaySongsViewModel @Inject constructor(
 
     private fun play() = viewModelScope.launch {
         val songId = _songs.value[_curIndex.value].id
-        val url = musicApi.musicUrl(songId).await().data.firstOrNull()?.url
-            ?: "https://music.163.com/song/media/outer/url?id=${songId}.mp3"
-        playMusic(url = url)
-        _isPlaying.tryEmit(_mediaPlayer?.isPlaying ?: false)
-        queryProgress()
+        try {
+            val url = musicApi.musicUrl(songId).await().data.firstOrNull()?.url
+                ?: "https://music.163.com/song/media/outer/url?id=${songId}.mp3"
+            playMusic(url = url)
+            _isPlaying.value = _mediaPlayer?.isPlaying ?: false
+            queryProgress()
+        } catch (ioe: IOException) {
+            nextPlay()
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
     }
 
     private fun queryProgress() = viewModelScope.launch {
@@ -56,6 +63,7 @@ class PlaySongsViewModel @Inject constructor(
             }
             delay(1000)
         }
+        _isPlaying.tryEmit(false)
     }
 
     fun playSongs(songs: List<Song>, index: Int? = null) {
@@ -95,24 +103,30 @@ class PlaySongsViewModel @Inject constructor(
     }
 
     /**
+     * 上一首
+     */
+    fun prevPlay() {
+        _curIndex.value = _curIndex.updateAndGet { (it - 1).coerceAtLeast(0) }
+        play()
+    }
+
+    /**
      * 下一首
      */
-    private fun nextPlay() {
-        _curIndex.tryEmit(_curIndex.updateAndGet { (it + 1).coerceAtMost(_songs.value.size - 1) })
+    fun nextPlay() {
+        _curIndex.value = _curIndex.updateAndGet { (it + 1).coerceAtMost(_songs.value.size - 1) }
         play()
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
     private suspend fun playMusic(url: String) = withContext(Dispatchers.IO) {
-        try {
-            _mediaPlayer?.stop()
-            _mediaPlayer?.seekTo(0)
-            _mediaPlayer?.setDataSource(url)
-            _mediaPlayer?.prepare()
-            _mediaPlayer?.start()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        _mediaPlayer?.setOnCompletionListener(null)
+        _mediaPlayer?.stop()
+        _mediaPlayer?.seekTo(0)
+        _mediaPlayer?.setDataSource(url)
+        _mediaPlayer?.prepare()
+        _mediaPlayer?.start()
+        _mediaPlayer?.setOnCompletionListener { nextPlay() }
     }
 
     override fun onCleared() {

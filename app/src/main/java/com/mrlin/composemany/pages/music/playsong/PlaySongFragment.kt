@@ -79,6 +79,8 @@ class PlaySongFragment : Fragment() {
                     is Event.ToComments -> findNavController().navigate(
                         MusicScreen.SongComment(curSong ?: return@PlaySong).directions
                     )
+                    is Event.PreviousSong -> playSongViewModel.prevPlay()
+                    is Event.NextSong -> playSongViewModel.nextPlay()
                 }
             }
         }
@@ -216,7 +218,9 @@ private fun PlaySong(
                 MiniButton(if (isPlaying) R.drawable.icon_song_pause else R.drawable.icon_song_play) {
                     onEvent?.invoke(Event.TogglePlay)
                 }
-                MiniButton(R.drawable.icon_song_right)
+                MiniButton(R.drawable.icon_song_right) {
+                    onEvent?.invoke(Event.NextSong)
+                }
                 MiniButton(R.drawable.icon_play_songs)
             }
         }
@@ -255,6 +259,10 @@ private sealed class Event {
     object Seek : Event()
 
     object TogglePlay : Event()
+
+    object PreviousSong: Event()
+
+    object NextSong: Event()
 
     object Back : Event()
 
