@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import retrofit2.await
+import retrofit2.awaitResponse
 import javax.inject.Inject
 
 /**
@@ -59,6 +60,20 @@ class CommentsViewModel @Inject constructor(
         } catch (t: Throwable) {
             t.printStackTrace()
         }
+    }
+
+    fun toggleMainCommentLike(comment: Comment) = viewModelScope.launch {
+        try {
+            val like = !comment.liked
+            val response = musicApi.likeComment(_song?.id ?: 0L, comment.commentId, if (like) 1 else 0).awaitResponse()
+            comment.liked = like
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
+    }
+
+    fun toggleFloorCommentLike(comment: Comment) {
+
     }
 
     private class CommentsPagingSource(

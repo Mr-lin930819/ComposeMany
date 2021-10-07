@@ -110,4 +110,19 @@ interface NetEaseMusicApi {
         @Query("limit") limit: Int = 20,
         @Query("time") time: Long? = null,
     ): Call<FloorCommentResponse>
+
+    /**
+     * 评论点赞/取消点赞
+     */
+    @GET("/comment/like")
+    fun likeComment(
+        //资源 id, 如歌曲 id,mv id
+        @Query("id") id: Long,
+        //评论 id
+        @Query("cid") cid: Long,
+        //是否点赞 ,1 为点赞 ,0 为取消点赞
+        @Query("t") isLike: Int,
+        //资源类型
+        @Query("type") type: CommentData.Type = CommentData.Type.SONG,
+    ): Call<EmptyResponse>
 }

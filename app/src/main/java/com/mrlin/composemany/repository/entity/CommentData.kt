@@ -75,6 +75,7 @@ data class Comment(
     val tag: Tag? = null,
     val commentId: Long = 0L,
     val beReplied: List<BeReplied>? = null,
+    var liked: Boolean = false,
 ) {
     data class Tag(
         val datas: List<TagData>? = null,

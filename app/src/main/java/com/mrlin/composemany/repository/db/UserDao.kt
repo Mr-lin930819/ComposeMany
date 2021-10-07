@@ -1,5 +1,6 @@
 package com.mrlin.composemany.repository.db
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -16,6 +17,6 @@ interface UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(user: User)
 
-    @Query("SELECT * FROM User WHERE ua_id=(:accountId)")
-    suspend fun findUser(accountId: Long): User?
+    @Query("SELECT * FROM User")
+    suspend fun findUser(accountId: Long): PagingSource<Int, User>
 }
