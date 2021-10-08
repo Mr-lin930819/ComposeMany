@@ -4,6 +4,7 @@ import com.mrlin.composemany.repository.entity.*
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query
+import java.util.*
 
 /*********************************
  * 网易云音乐API
@@ -94,7 +95,8 @@ interface NetEaseMusicApi {
         @Query("pageSize") pageSize: Int = 20,
         @Query("sortType") sortType: CommentData.SortType = CommentData.SortType.RECOMMEND,
         //当sortType为3时且页数不是第一页时需传入,值为上一条数据的time
-        @Query("cursor") cursor: Long? = null
+        @Query("cursor") cursor: Long? = null,
+        @Query("timestamp") timestamp: Long? = Date().time
     ): Call<CommentResponse>
 
     /**
@@ -109,5 +111,21 @@ interface NetEaseMusicApi {
         @Query("type") type: CommentData.Type = CommentData.Type.SONG,
         @Query("limit") limit: Int = 20,
         @Query("time") time: Long? = null,
+        @Query("timestamp") timestamp: Long? = Date().time
     ): Call<FloorCommentResponse>
+
+    /**
+     * 评论点赞/取消点赞
+     */
+    @GET("/comment/like")
+    fun likeComment(
+        //资源 id, 如歌曲 id,mv id
+        @Query("id") id: Long,
+        //评论 id
+        @Query("cid") cid: Long,
+        //是否点赞 ,1 为点赞 ,0 为取消点赞
+        @Query("t") isLike: Int,
+        //资源类型
+        @Query("type") type: CommentData.Type = CommentData.Type.SONG,
+    ): Call<EmptyResponse>
 }

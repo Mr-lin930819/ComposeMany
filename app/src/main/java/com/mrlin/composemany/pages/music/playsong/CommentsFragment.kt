@@ -5,13 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -33,7 +30,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.items
+import androidx.paging.compose.itemsIndexed
 import com.mrlin.composemany.R
 import com.mrlin.composemany.pages.music.home.composeContent
 import com.mrlin.composemany.pages.music.widgets.CircleAvatar
@@ -71,11 +68,20 @@ class CommentsFragment : Fragment() {
         LaunchedEffect(key1 = sortType, block = { commentList.refresh() })
         ProvideTextStyle(value = MaterialTheme.typography.body2) {
             ModalBottomSheetLayout(
-                sheetContent = { ReplySheet(floorComment) },
+                sheetContent = {
+                    ReplySheet(floorComment, onLikeToggle = { index, comment ->
+                        //不支持楼层中原评论的点赞（暂时无法将数据集改变进行通知）
+                        if (index >= 0) {
+                            viewModel.toggleFloorCommentLike(comment)
+                        }
+                    })
+                },
                 sheetState = sheetState,
                 sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
             ) {
-                CommentMain(song, commentCount, commentList, sortType) {
+                CommentMain(song, commentCount, commentList, sortType, onLikeToggle = { _, comment ->
+                    viewModel.toggleMainCommentLike(comment)
+                }) {
                     viewModel.loadFloorReply(it.commentId)
                     scope.launch { sheetState.show() }
                 }
@@ -96,6 +102,7 @@ class CommentsFragment : Fragment() {
         commentCount: Int,
         commentList: LazyPagingItems<Comment>,
         sortType: CommentData.SortType,
+        onLikeToggle: (Int, Comment) -> Unit,
         onEnterFloor: (Comment) -> Unit
     ) {
         Scaffold(
@@ -115,8 +122,10 @@ class CommentsFragment : Fragment() {
                     stickyHeader {
                         CommentListTitle(sortType) { viewModel.changeRankType(it) }
                     }
-                    items(commentList) {
-                        CommentItem(it) { it?.run(onEnterFloor) }
+                    itemsIndexed(commentList) { index, item ->
+                        CommentItem(item, onLikeToggle = { item?.run { onLikeToggle(index, item) } }) {
+                            item?.run(onEnterFloor)
+                        }
                     }
                 }
                 Row(
@@ -191,7 +200,10 @@ class CommentsFragment : Fragment() {
      * 评论
      */
     @Composable
-    private fun CommentItem(comment: Comment?, excludeRepliedId: Long? = null, onClickReply: () -> Unit) {
+    private fun CommentItem(
+        comment: Comment?, excludeRepliedId: Long? = null, onLikeToggle: () -> Unit,
+        onClickReply: () -> Unit
+    ) {
         if (comment == null) {
             Box(
                 modifier = Modifier
@@ -204,7 +216,7 @@ class CommentsFragment : Fragment() {
         val user = comment.user
         val contentPaddingStart = 44.dp
         Column(modifier = Modifier.padding(8.dp)) {
-            CommentTitle(comment = comment, user = user)
+            CommentTitle(comment = comment, user = user, onLikeToggle = onLikeToggle)
             Text(
                 text = comment.content,
                 modifier = Modifier.padding(
@@ -215,7 +227,8 @@ class CommentsFragment : Fragment() {
                 )
             )
             comment.beReplied?.firstOrNull()?.takeIf {
-                it.status >= 0 && it.content.orEmpty().isNotEmpty() && it.beRepliedCommentId != excludeRepliedId
+                it.status >= 0 && it.content.orEmpty()
+                    .isNotEmpty() && it.beRepliedCommentId != excludeRepliedId
             }?.let { beReplied ->
                 Row(
                     Modifier
@@ -261,7 +274,7 @@ class CommentsFragment : Fragment() {
      * 评论title
      */
     @Composable
-    private fun CommentTitle(comment: Comment, user: CommentUser) {
+    private fun CommentTitle(comment: Comment, user: CommentUser, onLikeToggle: () -> Unit) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -280,17 +293,21 @@ class CommentsFragment : Fragment() {
                 )
             }
             Spacer(modifier = Modifier.weight(1.0f))
-            Text(
-                text = comment.likedCount.toLong().simpleNumText(), color = Color.Gray,
-                style = MaterialTheme.typography.caption
-            )
-            Icon(
-                painter = painterResource(id = R.drawable.icon_parise),
-                contentDescription = null,
-                modifier = Modifier
-                    .padding(4.dp)
-                    .size(16.dp)
-            )
+            IconButton(onClick = onLikeToggle, Modifier.width(64.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = comment.likedCount.toLong().simpleNumText(), color = Color.Gray,
+                        style = MaterialTheme.typography.caption
+                    )
+                    Image(
+                        painter = painterResource(id = if (comment.liked) R.drawable.icon_parise_fill else R.drawable.icon_parise),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .padding(4.dp),
+                    )
+                }
+            }
         }
     }
 
@@ -300,7 +317,7 @@ class CommentsFragment : Fragment() {
     @ExperimentalFoundationApi
     @ExperimentalMaterialApi
     @Composable
-    private fun ReplySheet(reply: FloorCommentData) {
+    private fun ReplySheet(reply: FloorCommentData, onLikeToggle: (Int, Comment) -> Unit) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxHeight(0.8f)
@@ -320,14 +337,17 @@ class CommentsFragment : Fragment() {
             reply.ownerComment?.let { ownerComment ->
                 item {
                     Column {
-                        CommentItem(ownerComment) {}
+                        CommentItem(ownerComment, onLikeToggle = { onLikeToggle(-1, ownerComment) }) {}
                         Text(text = "全部回复", fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
             }
-            items(reply.comments) {
-                CommentItem(it, excludeRepliedId = reply.ownerComment?.commentId) {}
+            itemsIndexed(reply.comments) { index, comment ->
+                CommentItem(
+                    comment,
+                    excludeRepliedId = reply.ownerComment?.commentId,
+                    onLikeToggle = { onLikeToggle(index, comment) }) {}
             }
         }
     }

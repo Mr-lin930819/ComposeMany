@@ -1,6 +1,7 @@
 package com.mrlin.composemany.di
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.dataStore
 import androidx.room.Room
@@ -16,7 +17,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import okhttp3.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Qualifier
@@ -39,8 +42,21 @@ class AppModule {
         .baseUrl("https://mrlin-netease-cloud-music-api-iota-silk.vercel.app/")
         .addConverterFactory(GsonConverterFactory.create())
         .addConverterFactory(EnumRetrofitConverterFactory())
-        .client(OkHttpClient.Builder().cookieJar(PersistCookieJar(cookieDataStore)).build())
+        .client(
+            OkHttpClient.Builder().cookieJar(PersistCookieJar(cookieDataStore))
+                .addInterceptor(OkhttpLogger).build()
+        )
         .build()
+
+    private object OkhttpLogger : Interceptor {
+        override fun intercept(chain: Interceptor.Chain): Response {
+            val request = chain.request()
+            Log.d("OkhttpLogger", "raw request：${request}")
+            val response = chain.proceed(request)
+            Log.d("OkhttpLogger", "raw response：${response.peekBody(1024 * 10).string()}")
+            return response
+        }
+    }
 
     @Singleton
     @Provides

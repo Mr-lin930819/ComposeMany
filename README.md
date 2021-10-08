@@ -12,7 +12,27 @@
 ### 音乐
 
 - 音乐功能借鉴了Flutter项目：[Flutter 版本的网易云音乐 ](https://github.com/fluttercandies/NeteaseCloudMusic)
-- 音乐API使用： [Binaryify/NeteaseCloudMusicApi: 网易云音乐 Node.js API service (github.com)](https://github.com/Binaryify/NeteaseCloudMusicApi)，使用Vercel构建
+
+	#### 关于服务端
+
+音乐API使用： [Binaryify/NeteaseCloudMusicApi: 网易云音乐 Node.js API service (github.com)](https://github.com/Binaryify/NeteaseCloudMusicApi)，使用Vercel构建。
+
+**可以按照链接仓库中方法搭建自己的Vercel服务器，获得域名。项目中域名统一在AppModule.kt文件中提供：**
+
+```kotlin
+//com.mrlin.composemany.di.AppModule.kt
+@Singleton
+@NetEaseMusicRetrofit
+@Provides
+fun provideNetEaseMusicRetrofit(
+  cookieDataStore: DataStore<CookieStore>
+): Retrofit = Retrofit.Builder()
+		.baseUrl("https://你的专属Vercel站点域名.vercel.app/")
+    ... ...
+    .build()
+```
+
+#### 部分界面效果图
 
 #### 功能
 
