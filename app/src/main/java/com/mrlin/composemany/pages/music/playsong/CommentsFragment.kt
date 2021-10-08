@@ -5,13 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -33,7 +30,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.items
+import androidx.paging.compose.itemsIndexed
 import com.mrlin.composemany.R
 import com.mrlin.composemany.pages.music.home.composeContent
 import com.mrlin.composemany.pages.music.widgets.CircleAvatar
@@ -71,13 +68,15 @@ class CommentsFragment : Fragment() {
         LaunchedEffect(key1 = sortType, block = { commentList.refresh() })
         ProvideTextStyle(value = MaterialTheme.typography.body2) {
             ModalBottomSheetLayout(
-                sheetContent = { ReplySheet(floorComment, onLikeToggle = { comment ->
-
-                }) },
+                sheetContent = {
+                    ReplySheet(floorComment, onLikeToggle = { index, comment ->
+                        viewModel.toggleFloorCommentLike(comment)
+                    })
+                },
                 sheetState = sheetState,
                 sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
             ) {
-                CommentMain(song, commentCount, commentList, sortType, onLikeToggle = { comment ->
+                CommentMain(song, commentCount, commentList, sortType, onLikeToggle = { index, comment ->
                     viewModel.toggleMainCommentLike(comment)
                 }) {
                     viewModel.loadFloorReply(it.commentId)
@@ -100,7 +99,7 @@ class CommentsFragment : Fragment() {
         commentCount: Int,
         commentList: LazyPagingItems<Comment>,
         sortType: CommentData.SortType,
-        onLikeToggle: (Comment) -> Unit,
+        onLikeToggle: (Int, Comment) -> Unit,
         onEnterFloor: (Comment) -> Unit
     ) {
         Scaffold(
@@ -120,9 +119,9 @@ class CommentsFragment : Fragment() {
                     stickyHeader {
                         CommentListTitle(sortType) { viewModel.changeRankType(it) }
                     }
-                    items(commentList) {
-                        CommentItem(it, onLikeToggle = { it?.run(onLikeToggle) }) {
-                            it?.run(onEnterFloor)
+                    itemsIndexed(commentList) { index, item ->
+                        CommentItem(item, onLikeToggle = { item?.run { onLikeToggle(index, item) } }) {
+                            item?.run(onEnterFloor)
                         }
                     }
                 }
@@ -297,7 +296,7 @@ class CommentsFragment : Fragment() {
                         text = comment.likedCount.toLong().simpleNumText(), color = Color.Gray,
                         style = MaterialTheme.typography.caption
                     )
-                    Icon(
+                    Image(
                         painter = painterResource(id = if (comment.liked) R.drawable.icon_parise_fill else R.drawable.icon_parise),
                         contentDescription = null,
                         modifier = Modifier
@@ -315,7 +314,7 @@ class CommentsFragment : Fragment() {
     @ExperimentalFoundationApi
     @ExperimentalMaterialApi
     @Composable
-    private fun ReplySheet(reply: FloorCommentData, onLikeToggle: (Comment) -> Unit) {
+    private fun ReplySheet(reply: FloorCommentData, onLikeToggle: (Int, Comment) -> Unit) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxHeight(0.8f)
@@ -335,17 +334,17 @@ class CommentsFragment : Fragment() {
             reply.ownerComment?.let { ownerComment ->
                 item {
                     Column {
-                        CommentItem(ownerComment, onLikeToggle = { onLikeToggle(ownerComment) }) {}
+                        CommentItem(ownerComment, onLikeToggle = { onLikeToggle(-1, ownerComment) }) {}
                         Text(text = "全部回复", fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
             }
-            items(reply.comments) {
+            itemsIndexed(reply.comments) { index, comment ->
                 CommentItem(
-                    it,
+                    comment,
                     excludeRepliedId = reply.ownerComment?.commentId,
-                    onLikeToggle = { onLikeToggle(it) }) {}
+                    onLikeToggle = { onLikeToggle(index, comment) }) {}
             }
         }
     }

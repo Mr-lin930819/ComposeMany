@@ -4,6 +4,7 @@ import com.mrlin.composemany.repository.entity.*
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query
+import java.util.*
 
 /*********************************
  * 网易云音乐API
@@ -94,7 +95,8 @@ interface NetEaseMusicApi {
         @Query("pageSize") pageSize: Int = 20,
         @Query("sortType") sortType: CommentData.SortType = CommentData.SortType.RECOMMEND,
         //当sortType为3时且页数不是第一页时需传入,值为上一条数据的time
-        @Query("cursor") cursor: Long? = null
+        @Query("cursor") cursor: Long? = null,
+        @Query("timestamp") timestamp: Long? = Date().time
     ): Call<CommentResponse>
 
     /**

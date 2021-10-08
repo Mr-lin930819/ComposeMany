@@ -51,9 +51,9 @@ class AppModule {
     private object OkhttpLogger : Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
             val request = chain.request()
-            Log.d("OkhttpLogger", "raw request：${request.body()?.toString()}")
+            Log.d("OkhttpLogger", "raw request：${request}")
             val response = chain.proceed(request)
-            Log.d("OkhttpLogger", "raw response：${response.body()?.string()}")
+            Log.d("OkhttpLogger", "raw response：${response.peekBody(1024 * 10).string()}")
             return response
         }
     }
