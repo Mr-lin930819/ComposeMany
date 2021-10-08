@@ -111,6 +111,7 @@ interface NetEaseMusicApi {
         @Query("type") type: CommentData.Type = CommentData.Type.SONG,
         @Query("limit") limit: Int = 20,
         @Query("time") time: Long? = null,
+        @Query("timestamp") timestamp: Long? = Date().time
     ): Call<FloorCommentResponse>
 
     /**

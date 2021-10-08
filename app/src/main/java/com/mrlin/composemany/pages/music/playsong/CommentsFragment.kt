@@ -70,13 +70,16 @@ class CommentsFragment : Fragment() {
             ModalBottomSheetLayout(
                 sheetContent = {
                     ReplySheet(floorComment, onLikeToggle = { index, comment ->
-                        viewModel.toggleFloorCommentLike(comment)
+                        //不支持楼层中原评论的点赞（暂时无法将数据集改变进行通知）
+                        if (index >= 0) {
+                            viewModel.toggleFloorCommentLike(comment)
+                        }
                     })
                 },
                 sheetState = sheetState,
                 sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
             ) {
-                CommentMain(song, commentCount, commentList, sortType, onLikeToggle = { index, comment ->
+                CommentMain(song, commentCount, commentList, sortType, onLikeToggle = { _, comment ->
                     viewModel.toggleMainCommentLike(comment)
                 }) {
                     viewModel.loadFloorReply(it.commentId)
@@ -290,7 +293,7 @@ class CommentsFragment : Fragment() {
                 )
             }
             Spacer(modifier = Modifier.weight(1.0f))
-            IconButton(onClick = onLikeToggle) {
+            IconButton(onClick = onLikeToggle, Modifier.width(64.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = comment.likedCount.toLong().simpleNumText(), color = Color.Gray,
@@ -300,8 +303,8 @@ class CommentsFragment : Fragment() {
                         painter = painterResource(id = if (comment.liked) R.drawable.icon_parise_fill else R.drawable.icon_parise),
                         contentDescription = null,
                         modifier = Modifier
-                            .padding(4.dp)
-                            .size(16.dp),
+                            .size(24.dp)
+                            .padding(4.dp),
                     )
                 }
             }

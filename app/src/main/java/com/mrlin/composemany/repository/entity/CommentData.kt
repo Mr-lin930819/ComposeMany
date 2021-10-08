@@ -62,15 +62,15 @@ data class FloorCommentData(
     val hasMore: Boolean = false,
     val totalCount: Int = 0,
     val time: Long = 0L,
-    val comments: List<Comment> = emptyList(),
-    val ownerComment: Comment? = null,
+    var comments: List<Comment> = emptyList(),
+    var ownerComment: Comment? = null,
 )
 
 data class Comment(
     val user: CommentUser,
     val content: String = "",
     val time: Long = 0,
-    val likedCount: Int = 0,
+    var likedCount: Int = 0,
     val showFloorComment: FloorComment? = null,
     val tag: Tag? = null,
     val commentId: Long = 0L,
