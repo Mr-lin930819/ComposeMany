@@ -46,7 +46,7 @@ fun provideNetEaseMusicRetrofit(
 
 #### 待实现功能
 
-- [ ] 评论点赞
+- [x] 评论点赞
 - [ ] 歌曲收藏
 - [ ] 歌曲评论、评论回复
 - [ ] 本地音乐
