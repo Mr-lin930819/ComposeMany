@@ -107,7 +107,7 @@ class CommentsViewModel @Inject constructor(
      * 点赞/取消点赞
      */
     @Throws(Throwable::class)
-    private suspend fun likeComment(comment: Comment, isLike: Boolean, ) {
+    private suspend fun likeComment(comment: Comment, isLike: Boolean) {
         val response = musicApi.likeComment(_song?.id ?: 0L, comment.commentId, if (isLike) 1 else 0).awaitResponse()
         if (response.isSuccessful) {
             comment.liked = isLike

@@ -105,6 +105,7 @@ class CommentsFragment : Fragment() {
         onLikeToggle: (Int, Comment) -> Unit,
         onEnterFloor: (Comment) -> Unit
     ) {
+        var myComment by remember { mutableStateOf("") }
         Scaffold(
             topBar = {
                 TopAppBar(title = {
@@ -130,12 +131,16 @@ class CommentsFragment : Fragment() {
                 }
                 Row(
                     modifier = Modifier
-                        .height(48.dp)
                         .border(width = 0.5.dp, color = Color.LightGray)
                         .padding(10.dp), verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "这一次也许就是你上热评了", color = Color.LightGray)
-                    Spacer(modifier = Modifier.weight(1f))
+                    OutlinedTextField(
+                        value = myComment, onValueChange = { myComment = it }, singleLine = true,
+                        placeholder = { Text(text = "这一次也许就是你上热评了", color = Color.LightGray) },
+                        textStyle = MaterialTheme.typography.body2,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
                     Text(text = "发送", color = Color.LightGray)
                 }
             }
