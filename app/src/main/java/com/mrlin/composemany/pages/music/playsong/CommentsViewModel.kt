@@ -44,7 +44,6 @@ class CommentsViewModel @Inject constructor(
         remoteMediator = CommentsRemoteMediator(
             musicApi,
             _song?.id ?: 0,
-            _commentSortType.value,
             _commentCount,
             commentCache
         )
@@ -108,7 +107,9 @@ class CommentsViewModel @Inject constructor(
      */
     @Throws(Throwable::class)
     private suspend fun likeComment(comment: Comment, isLike: Boolean) {
-        val response = musicApi.likeComment(_song?.id ?: 0L, comment.commentId, if (isLike) 1 else 0).awaitResponse()
+        val response =
+            musicApi.likeComment(_song?.id ?: 0L, comment.commentId, if (isLike) 1 else 0)
+                .awaitResponse()
         if (response.isSuccessful) {
             comment.liked = isLike
             if (isLike) {
@@ -118,6 +119,50 @@ class CommentsViewModel @Inject constructor(
             }
         } else {
             throw Throwable("点赞/取消点赞失败！")
+        }
+    }
+
+    //发表评论
+    fun publishComment(content: String) = viewModelScope.launch {
+        try {
+            operateComment(content = content)
+            _commentCount.value++
+            _currentSource?.invalidate()
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
+    }
+
+    //删除评论
+    fun deleteComment(commentId: Long?) = viewModelScope.launch {
+        try {
+            operateComment(CommentData.Op.DELETE, commentId = commentId)
+            _commentCount.value--
+            _currentSource?.invalidate()
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
+    }
+
+    //操作评论
+    @Throws(Throwable::class)
+    private suspend fun operateComment(
+        op: CommentData.Op = CommentData.Op.PUBLISH,
+        content: String? = null,
+        commentId: Long? = null
+    ) {
+        val response = musicApi.comment(
+            operation = op, id = _song?.id ?: 0L, content = content,
+            commentId = commentId
+        ).awaitResponse()
+        if (response.isSuccessful) {
+            if (op == CommentData.Op.PUBLISH) {
+                response.body()?.comment?.let { commentCache.add(0, it) }
+            } else if (op == CommentData.Op.DELETE) {
+                commentCache.removeAll { it.commentId == commentId }
+            }
+        } else {
+            throw Throwable("评论发布失败")
         }
     }
 
@@ -139,7 +184,12 @@ class CommentsViewModel @Inject constructor(
                 Pair(pageNum * pageSize, pageNum + 1)
             }
             return LoadResult.Page(
-                data = ArrayList(commentCache.subList(pageStartIndex, endIndex.coerceAtLeast(pageStartIndex))),
+                data = ArrayList(
+                    commentCache.subList(
+                        pageStartIndex,
+                        endIndex.coerceAtLeast(pageStartIndex)
+                    )
+                ),
                 prevKey = null,
                 nextKey = nextKey
             )
@@ -156,22 +206,27 @@ class CommentsViewModel @Inject constructor(
     private inner class CommentsRemoteMediator(
         private val musicApi: NetEaseMusicApi,
         private val songId: Long,
-        private val rankType: CommentData.SortType,
         private val commentCount: MutableStateFlow<Int>,
         private val commentCache: MutableList<Comment>,
     ) : RemoteMediator<Int, Comment>() {
         private var lastCursor: Long? = null
-        override suspend fun load(loadType: LoadType, state: PagingState<Int, Comment>): MediatorResult {
-            val pageNum = state.pages.size + 1
+        override suspend fun load(
+            loadType: LoadType,
+            state: PagingState<Int, Comment>
+        ): MediatorResult {
+            val pageNum = when (loadType) {
+                LoadType.REFRESH -> 1
+                else -> state.pages.size + 1
+            }
             val response = musicApi.commentData(
                 songId,
                 pageNo = pageNum,
                 pageSize = state.config.pageSize,
                 cursor = lastCursor,
-                sortType = rankType
+                sortType = _commentSortType.value
             ).await()
             commentCount.value = response.data.totalCount
-            if (rankType == CommentData.SortType.NEWEST) {
+            if (_commentSortType.value == CommentData.SortType.NEWEST) {
                 lastCursor = response.data.comments.lastOrNull()?.time
             }
             when (loadType) {

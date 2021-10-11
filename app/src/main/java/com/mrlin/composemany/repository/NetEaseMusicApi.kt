@@ -128,4 +128,17 @@ interface NetEaseMusicApi {
         //资源类型
         @Query("type") type: CommentData.Type = CommentData.Type.SONG,
     ): Call<EmptyResponse>
+
+    //评论操作（发布、回复、删除）
+    @GET("/comment")
+    fun comment(
+        //0 删除,1 发送, 2 回复
+        @Query("t") operation: CommentData.Op = CommentData.Op.PUBLISH,
+        @Query("type") type: CommentData.Type = CommentData.Type.SONG,
+        //对应资源 id
+        @Query("id") id: Long,
+        @Query("content") content: String? = null,
+        //回复的评论id (回复评论时必填)
+        @Query("commentId") commentId: Long? = null,
+    ): Call<CommentOpResponse>
 }

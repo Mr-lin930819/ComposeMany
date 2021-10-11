@@ -21,6 +21,11 @@ data class CommentResponse(
     val data: CommentData,
 )
 
+data class CommentOpResponse(
+    val code: Int = 0,
+    val comment: Comment,
+)
+
 data class FloorCommentResponse(
     val code: Int = 0,
     val data: FloorCommentData,
@@ -52,6 +57,17 @@ data class CommentData(
 
         @SerializedName("3")
         NEWEST,
+    }
+
+    enum class Op {
+        @SerializedName("1")
+        PUBLISH,
+
+        @SerializedName("2")
+        REPLY,
+
+        @SerializedName("0")
+        DELETE,
     }
 }
 
