@@ -53,7 +53,7 @@ class AppModule {
             val request = chain.request()
             Log.d("OkhttpLogger", "raw request：${request}")
             val response = chain.proceed(request)
-            Log.d("OkhttpLogger", "raw response：${response.peekBody(1024 * 10).string()}")
+            Log.d("OkhttpLogger", "raw response：${response.peekBody((1024 * 10).toLong()).string()}")
             return response
         }
     }

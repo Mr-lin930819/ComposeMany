@@ -6,6 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.FocusInteraction
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -17,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -40,6 +43,7 @@ import com.mrlin.composemany.repository.entity.*
 import com.mrlin.composemany.ui.theme.LightGray
 import com.mrlin.composemany.utils.simpleNumText
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -70,6 +74,8 @@ class CommentsFragment : Fragment() {
         val floorComment by viewModel.floorComment.collectAsState()
         val sheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
         val scope = rememberCoroutineScope()
+        val replyToComment by viewModel.replyToComment.collectAsState()
+        val focusManager = LocalFocusManager.current
 
         LaunchedEffect(key1 = sortType, block = { commentList.refresh() })
         ProvideTextStyle(value = MaterialTheme.typography.body2) {
@@ -83,6 +89,7 @@ class CommentsFragment : Fragment() {
                                     viewModel.toggleFloorCommentLike(event.comment)
                                 }
                             }
+                            is Event.DeleteComment -> viewModel.deleteFloorComment(event.commentId)
                             else -> {
                             }
                         }
@@ -91,7 +98,7 @@ class CommentsFragment : Fragment() {
                 sheetState = sheetState,
                 sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
             ) {
-                CommentMain(song, commentCount, commentList, sortType) { event ->
+                CommentMain(song, commentCount, commentList, sortType, replyToComment) { event ->
                     when (event) {
                         is Event.EnterFloor -> {
                             viewModel.loadFloorReply(event.comment.commentId)
@@ -100,6 +107,10 @@ class CommentsFragment : Fragment() {
                         is Event.ToggleLike -> viewModel.toggleMainCommentLike(event.comment)
                         is Event.PublishComment -> viewModel.publishComment(event.content)
                         is Event.DeleteComment -> viewModel.deleteComment(event.commentId)
+                        is Event.ReplyTo -> {
+                            viewModel.changeReplyTo(event.comment)
+                            focusManager.clearFocus()
+                        }
                     }
                 }
             }
@@ -119,9 +130,10 @@ class CommentsFragment : Fragment() {
         commentCount: Int,
         commentList: LazyPagingItems<Comment>,
         sortType: CommentData.SortType,
+        //回复的评论
+        replyToComment: Comment? = null,
         onEvent: (Event) -> Unit,
     ) {
-        var myComment by remember { mutableStateOf("") }
         Scaffold(
             topBar = {
                 TopAppBar(title = {
@@ -142,30 +154,23 @@ class CommentsFragment : Fragment() {
                     itemsIndexed(commentList) { index, item ->
                         CommentItem(item, onLikeToggle = {
                             item?.run { onEvent(Event.ToggleLike(index, item)) }
-                        }, onDeleteClick = { onEvent(Event.DeleteComment(item?.commentId)) }) {
+                        }, onDeleteClick = {
+                            onEvent(Event.DeleteComment(item?.commentId))
+                        }, onReplyMeClick = {
+                            item?.run { onEvent(Event.ReplyTo(this)) }
+                        }) {
                             item?.run { onEvent(Event.EnterFloor(this)) }
                         }
                     }
                 }
-                Row(
-                    modifier = Modifier
-                        .border(width = 0.5.dp, color = Color.LightGray)
-                        .padding(10.dp), verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedTextField(
-                        value = myComment, onValueChange = { myComment = it }, singleLine = true,
-                        placeholder = { Text(text = "这一次也许就是你上热评了", color = Color.LightGray) },
-                        textStyle = MaterialTheme.typography.body2,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Button(onClick = {
-                        onEvent(Event.PublishComment(myComment))
-                        myComment = ""
-                    }) {
-                        Text(text = "发送", color = Color.LightGray)
-                    }
+                val hint = if (replyToComment == null) {
+                    "这一次也许就是你上热评了"
+                } else {
+                    "回复 ${replyToComment.user.nickname}:"
                 }
+                CommentInputField(
+                    hint = hint,
+                    onUnfocus = { onEvent(Event.ReplyTo(null)) }) { onEvent(Event.PublishComment(it)) }
             }
         }
     }
@@ -230,7 +235,7 @@ class CommentsFragment : Fragment() {
     @Composable
     private fun CommentItem(
         comment: Comment?, excludeRepliedId: Long? = null, onLikeToggle: () -> Unit,
-        onDeleteClick: (() -> Unit)? = null, onClickReply: () -> Unit
+        onDeleteClick: (() -> Unit)? = null, onReplyMeClick: (() -> Unit)? = null, onClickReply: () -> Unit,
     ) {
         if (comment == null) {
             Box(
@@ -243,7 +248,9 @@ class CommentsFragment : Fragment() {
         }
         val user = comment.user
         val contentPaddingStart = 44.dp
-        Column(modifier = Modifier.padding(8.dp)) {
+        Column(modifier = Modifier
+            .padding(8.dp)
+            .clickable(onReplyMeClick != null) { onReplyMeClick?.invoke() }) {
             CommentTitle(comment = comment, user = user, onLikeToggle = onLikeToggle, onDeleteClick)
             Text(
                 text = comment.content,
@@ -355,41 +362,92 @@ class CommentsFragment : Fragment() {
     @ExperimentalMaterialApi
     @Composable
     private fun ReplySheet(reply: FloorCommentData, onEvent: (Event) -> Unit) {
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxHeight(0.8f)
                 .fillMaxWidth()
                 .padding(16.dp)
                 .background(color = MaterialTheme.colors.surface)
         ) {
-            stickyHeader {
-                Surface(Modifier.fillMaxWidth()) {
-                    Text(
-                        text = "回复(${reply.totalCount})",
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                }
+            Surface(Modifier.fillMaxWidth()) {
+                Text(
+                    text = "回复(${reply.totalCount})",
+                    fontSize = 18.sp,
+                    modifier = Modifier.padding(8.dp)
+                )
             }
-            reply.ownerComment?.let { ownerComment ->
-                item {
-                    Column {
-                        CommentItem(
-                            ownerComment,
-                            onLikeToggle = { onEvent(Event.ToggleLike(-1, ownerComment)) }) {}
-                        Text(text = "全部回复", fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.height(8.dp))
+            LazyColumn(modifier = Modifier.weight(1f)) {
+                reply.ownerComment?.let { ownerComment ->
+                    item {
+                        Column {
+                            CommentItem(
+                                ownerComment,
+                                onLikeToggle = { onEvent(Event.ToggleLike(-1, ownerComment)) }) {}
+                            Text(text = "全部回复", fontWeight = FontWeight.Bold)
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
                     }
                 }
+                itemsIndexed(reply.comments) { index, comment ->
+                    CommentItem(
+                        comment,
+                        excludeRepliedId = reply.ownerComment?.commentId,
+                        onLikeToggle = { onEvent(Event.ToggleLike(index, comment)) },
+                        onDeleteClick = { onEvent(Event.DeleteComment(comment.commentId)) }) {}
+                }
             }
-            itemsIndexed(reply.comments) { index, comment ->
-                CommentItem(
-                    comment,
-                    excludeRepliedId = reply.ownerComment?.commentId,
-                    onLikeToggle = { onEvent(Event.ToggleLike(index, comment)) }) {}
+            CommentInputField(
+                onUnfocus = { onEvent(Event.ReplyTo(null)) },
+                onCommit = { onEvent(Event.PublishComment(it)) })
+        }
+    }
+
+    /**
+     * 评论输入栏
+     */
+    @Composable
+    private fun CommentInputField(
+        hint: String = "这一次也许就是你上热评了",
+        onUnfocus: () -> Unit,
+        onCommit: (String) -> Unit,
+    ) {
+        var myComment by remember { mutableStateOf("") }
+        val s = MutableInteractionSource()
+        LaunchedEffect(key1 = s, block = {
+            s.interactions.collect {
+                if (it is FocusInteraction.Unfocus) {
+                    onUnfocus()
+                }
+            }
+        })
+
+        Row(
+            modifier = Modifier
+                .border(width = 0.5.dp, color = Color.LightGray), verticalAlignment = Alignment.CenterVertically
+        ) {
+            TextField(
+                value = myComment, onValueChange = { myComment = it }, singleLine = true,
+                placeholder = { Text(text = hint, color = Color.LightGray) },
+                textStyle = MaterialTheme.typography.body2,
+                modifier = Modifier.weight(1f),
+                colors = TextFieldDefaults.textFieldColors(
+                    backgroundColor = Color.Transparent
+                ),
+                interactionSource = s
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            IconButton(onClick = {
+                onCommit(myComment)
+                myComment = ""
+            }, enabled = myComment.isNotEmpty()) {
+                Text(
+                    text = "发送",
+                    color = if (myComment.isEmpty()) Color.LightGray else MaterialTheme.colors.primary
+                )
             }
         }
     }
+
 
     private sealed class Event {
         //点赞/取消点赞
@@ -403,5 +461,8 @@ class CommentsFragment : Fragment() {
 
         //删除评论
         class DeleteComment(val commentId: Long?) : Event()
+
+        //指定回复的评论
+        class ReplyTo(val comment: Comment?) : Event()
     }
 }

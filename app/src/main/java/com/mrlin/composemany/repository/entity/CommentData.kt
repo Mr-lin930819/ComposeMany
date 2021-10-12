@@ -103,7 +103,7 @@ data class Comment(
 }
 
 data class FloorComment(
-    val replyCount: Long = 0,
+    var replyCount: Long = 0,
     val showReplyCount: Boolean = false,
 )
 

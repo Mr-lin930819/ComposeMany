@@ -30,10 +30,12 @@ class CommentsViewModel @Inject constructor(
     private val _commentCount = MutableStateFlow(0)
     private val _commentSortType = MutableStateFlow(CommentData.SortType.RECOMMEND)
     private val _floorComment = MutableStateFlow(FloorCommentData())
+    private val _replyToComment = MutableStateFlow<Comment?>(null)
 
     val commentCount: StateFlow<Int> = _commentCount
     val commentSortType: StateFlow<CommentData.SortType> = _commentSortType
     val floorComment: StateFlow<FloorCommentData> = _floorComment
+    val replyToComment: StateFlow<Comment?> = _replyToComment
     private val _song = savedStateHandle.get<Song>("song")
     private val commentCache: MutableList<Comment> = mutableListOf()
     private var _currentSource: MemoryCachePagingSource? = null
@@ -125,8 +127,15 @@ class CommentsViewModel @Inject constructor(
     //发表评论
     fun publishComment(content: String) = viewModelScope.launch {
         try {
-            operateComment(content = content)
-            _commentCount.value++
+            val op = if (_replyToComment.value == null) CommentData.Op.PUBLISH else CommentData.Op.REPLY
+            operateComment(op, content = content, commentId = _replyToComment.value?.commentId)
+            if (op == CommentData.Op.PUBLISH) {
+                _commentCount.value++
+            } else {
+                commentCache.find { it.commentId == _replyToComment.value?.commentId }?.showFloorComment?.let {
+                    it.replyCount++
+                }
+            }
             _currentSource?.invalidate()
         } catch (t: Throwable) {
             t.printStackTrace()
@@ -142,6 +151,27 @@ class CommentsViewModel @Inject constructor(
         } catch (t: Throwable) {
             t.printStackTrace()
         }
+    }
+
+    //删除楼层评论
+    fun deleteFloorComment(commentId: Long?) = viewModelScope.launch {
+        try {
+            operateComment(CommentData.Op.DELETE, commentId = commentId)
+            _floorComment.value = _floorComment.value.run {
+                val commentList = comments.toMutableList()
+                commentList.removeAll { it.commentId == commentId }
+                FloorCommentData(
+                    hasMore, totalCount - 1, Date().time, commentList.toList(), ownerComment
+                )
+            }
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
+    }
+
+    //更改回复的评论对象
+    fun changeReplyTo(comment: Comment?) {
+        _replyToComment.value = comment
     }
 
     //操作评论
@@ -162,7 +192,7 @@ class CommentsViewModel @Inject constructor(
                 commentCache.removeAll { it.commentId == commentId }
             }
         } else {
-            throw Throwable("评论发布失败")
+            throw Throwable("评论操作失败")
         }
     }
 
