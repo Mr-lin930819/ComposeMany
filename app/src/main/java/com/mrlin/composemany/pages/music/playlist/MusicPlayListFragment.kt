@@ -212,12 +212,7 @@ private fun SongsList(
     playSongsViewModel: PlaySongsViewModel,
     topPadding: Dp = 0.dp
 ) {
-    val curPlayIndex by playSongsViewModel.curIndex.collectAsState()
-    val curPlaySong by remember(curPlayIndex) {
-        derivedStateOf {
-            playSongsViewModel.allSongs.value.getOrNull(curPlayIndex)
-        }
-    }
+    val curPlaySong by playSongsViewModel.curSong.collectAsState()
     when (playList) {
         is ViewState.Busy -> Box(
             modifier = Modifier

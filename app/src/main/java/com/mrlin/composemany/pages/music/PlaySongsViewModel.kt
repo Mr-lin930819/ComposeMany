@@ -1,25 +1,27 @@
 package com.mrlin.composemany.pages.music
 
 import android.media.MediaPlayer
+import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mrlin.composemany.MusicSettings
 import com.mrlin.composemany.repository.NetEaseMusicApi
 import com.mrlin.composemany.repository.entity.Song
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.updateAndGet
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.await
+import retrofit2.awaitResponse
 import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
 class PlaySongsViewModel @Inject constructor(
-    private val musicApi: NetEaseMusicApi
+    private val musicApi: NetEaseMusicApi,
+    private val musicSettingsStore: DataStore<MusicSettings>
 ) : ViewModel() {
     private val _songs = MutableStateFlow(emptyList<Song>())
     private var _curIndex = MutableStateFlow(0)
@@ -27,14 +29,29 @@ class PlaySongsViewModel @Inject constructor(
     private val _curProgress = MutableStateFlow(0f)
     private val _isPlaying = MutableStateFlow(false)
     private var tryingSeek = false
+    private val _likeList = MutableStateFlow(mutableListOf<Long>())
+    private val _curSong = _curIndex.map { allSongs.value.getOrNull(it) }.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(), null
+    )
 
     val allSongs: StateFlow<List<Song>> = _songs
-    var curIndex: StateFlow<Int> = _curIndex
+    val curSong: StateFlow<Song?> = _curSong
     val curProgress: StateFlow<Float> = _curProgress
     val isPlaying: StateFlow<Boolean> = _isPlaying
+    val likeList: StateFlow<List<Long>> = _likeList
 
     init {
         _mediaPlayer = MediaPlayer()
+        viewModelScope.launch {
+            //载入喜欢的音乐id列表
+            val uid = musicSettingsStore.data.map { it.userAccountId.toLong() }.firstOrNull()
+            try {
+                val likeList = musicApi.likeList(uid ?: 0L).await()
+                _likeList.value = ArrayList(likeList.ids)
+            } catch (t: Throwable) {
+                t.printStackTrace()
+            }
+        }
     }
 
     private fun play() = viewModelScope.launch {
@@ -116,6 +133,28 @@ class PlaySongsViewModel @Inject constructor(
     fun nextPlay() {
         _curIndex.value = _curIndex.updateAndGet { (it + 1).coerceAtMost(_songs.value.size - 1) }
         play()
+    }
+
+    /**
+     * 喜欢/不喜欢歌曲
+     */
+    fun toggleLike() = viewModelScope.launch {
+        try {
+            val song = _curSong.value ?: return@launch
+            val like = _likeList.value.contains(song.id)
+            val response = musicApi.likeSong(song.id, !like).await()
+            if (response.code == 200) {
+                _likeList.value = _likeList.value.apply {
+                    if (like) {
+                        remove(song.id)
+                    } else {
+                        add(song.id)
+                    }
+                }
+            }
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")

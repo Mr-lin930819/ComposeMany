@@ -36,6 +36,7 @@ data class Track(
     val mv: Long,
     val ar: List<Ar>,
     val al: Al,
+    val t: Int = 0,
 ) {
     fun artists() = ar.joinToString("/") { it.name }
 }

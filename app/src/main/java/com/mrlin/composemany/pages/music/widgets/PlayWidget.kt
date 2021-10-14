@@ -28,8 +28,7 @@ import com.mrlin.composemany.pages.music.PlaySongsViewModel
 @Composable
 fun PlayWidget(viewModel: PlaySongsViewModel = viewModel(), height: Dp = 72.dp, onClick: () -> Unit) {
     val allSongs by viewModel.allSongs.collectAsState()
-    val curIndex by viewModel.curIndex.collectAsState()
-    val curSong = allSongs.getOrNull(curIndex)
+    val curSong by viewModel.curSong.collectAsState()
     Box(
         modifier = Modifier
             .height(height)

@@ -60,17 +60,18 @@ class PlaySongFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View = composeContent {
-        val curSongIndex by playSongViewModel.curIndex.collectAsState()
-        val curSong = playSongViewModel.allSongs.value.getOrNull(curSongIndex)
+        val curSong by playSongViewModel.curSong.collectAsState()
         val curProgress by playSongViewModel.curProgress.collectAsState()
         val isPlaying by playSongViewModel.isPlaying.collectAsState()
         val commentData by viewModel.songComment.collectAsState()
+        val likeList by playSongViewModel.likeList.collectAsState()
         LaunchedEffect(key1 = curSong, block = {
             //歌曲更换后自动载入对应评论
             viewModel.loadComment(curSong ?: return@LaunchedEffect)
         })
         ComposeManyTheme {
-            PlaySong(song = curSong, curProgress, isPlaying, commentData) {
+            val likeSong = likeList.contains(curSong?.id)
+            PlaySong(song = curSong, curProgress, isPlaying, commentData, likeSong) {
                 when (it) {
                     is Event.TrySeek -> playSongViewModel.trySeek(it.progress)
                     is Event.Seek -> playSongViewModel.seekPlay()
@@ -81,6 +82,7 @@ class PlaySongFragment : Fragment() {
                     )
                     is Event.PreviousSong -> playSongViewModel.prevPlay()
                     is Event.NextSong -> playSongViewModel.nextPlay()
+                    is Event.LikeSong -> playSongViewModel.toggleLike()
                 }
             }
         }
@@ -94,6 +96,7 @@ private fun PlaySong(
     progress: Float = 0f,
     isPlaying: Boolean = false,
     commentData: SongCommentData? = null,
+    likeSong: Boolean = false,
     onEvent: ((Event) -> Unit)? = null
 ) {
     Scaffold(
@@ -184,6 +187,12 @@ private fun PlaySong(
                     .padding(horizontal = 16.dp)
                     .height(64.dp), horizontalArrangement = Arrangement.SpaceEvenly
             ) {
+                MiniButton(
+                    if (likeSong) R.drawable.icon_like else R.drawable.icon_dislike,
+                    tint = if (likeSong) Color.Red else Color.LightGray
+                ) {
+                    onEvent?.invoke(Event.LikeSong)
+                }
                 MiniButton(R.drawable.icon_song_download)
                 MiniButton(R.drawable.bfc)
                 Box(modifier = Modifier.fillMaxHeight()) {
@@ -260,13 +269,15 @@ private sealed class Event {
 
     object TogglePlay : Event()
 
-    object PreviousSong: Event()
+    object PreviousSong : Event()
 
-    object NextSong: Event()
+    object NextSong : Event()
 
     object Back : Event()
 
     object ToComments : Event()
+
+    object LikeSong : Event()
 }
 
 @Preview

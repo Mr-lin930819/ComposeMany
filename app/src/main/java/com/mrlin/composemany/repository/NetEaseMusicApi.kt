@@ -141,4 +141,15 @@ interface NetEaseMusicApi {
         //回复的评论id (回复评论时必填)
         @Query("commentId") commentId: Long? = null,
     ): Call<CommentOpResponse>
+
+    //喜欢音乐
+    @GET("/like")
+    fun likeSong(@Query("id") id: Long, @Query("like") like: Boolean = true): Call<EmptyResponse>
+
+    //喜欢的音乐列表
+    @GET("likelist")
+    fun likeList(
+        @Query("uid") uid: Long,
+        @Query("timestamp") timestamp: Long? = Date().time
+    ): Call<LikeList>
 }
