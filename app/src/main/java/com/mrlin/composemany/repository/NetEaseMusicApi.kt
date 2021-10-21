@@ -152,4 +152,16 @@ interface NetEaseMusicApi {
         @Query("uid") uid: Long,
         @Query("timestamp") timestamp: Long? = Date().time
     ): Call<LikeList>
+
+    /**
+     * 编辑歌单
+     * @param [pid]    歌单 id
+     * @param [tracks] 歌曲 id,可多个,用逗号隔开
+     */
+    @GET("/playlist/tracks")
+    fun editPlayList(
+        @Query("op") op: PlayList.Op = PlayList.Op.ADD,
+        @Query("pid") pid: Long,
+        @Query("tracks") tracks: Long
+    ): Call<EmptyResponse>
 }

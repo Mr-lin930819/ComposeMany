@@ -1,5 +1,7 @@
 package com.mrlin.composemany.repository.entity
 
+import com.google.gson.annotations.SerializedName
+
 /**
  * 播放列表数据
  */
@@ -24,7 +26,14 @@ data class PlayList(
     val trackCount: Int = 0,
     val id: Long = 0,
     val playCount: Long = 0,
-)
+) {
+    enum class Op {
+        @SerializedName("add")
+        ADD,
+        @SerializedName("del")
+        DEL
+    }
+}
 
 data class Subscribers(
     val userId: Int,
