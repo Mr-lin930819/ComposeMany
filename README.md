@@ -13,7 +13,13 @@
 
 - 音乐功能借鉴了Flutter项目：[Flutter 版本的网易云音乐 ](https://github.com/fluttercandies/NeteaseCloudMusic)
 
-	#### 关于服务端
+#### 功能实现分析
+
+在掘金写了篇简单的文章概述了音乐功能的实现思路：
+
+[用Compose实现轻量版网易云音乐 - 掘金 (juejin.cn)](https://juejin.cn/post/7011895995722121247)
+
+#### 关于服务端
 
 音乐API使用： [Binaryify/NeteaseCloudMusicApi: 网易云音乐 Node.js API service (github.com)](https://github.com/Binaryify/NeteaseCloudMusicApi)，使用Vercel构建。
 
@@ -28,8 +34,8 @@ fun provideNetEaseMusicRetrofit(
   cookieDataStore: DataStore<CookieStore>
 ): Retrofit = Retrofit.Builder()
 		.baseUrl("https://你的专属Vercel站点域名.vercel.app/")
-    ... ...
-    .build()
+	    ... ...
+    	.build()
 ```
 
 #### 部分界面效果图
@@ -47,10 +53,13 @@ fun provideNetEaseMusicRetrofit(
 #### 待实现功能
 
 - [x] 评论点赞
-- [ ] 歌曲收藏
-- [ ] 歌曲评论、评论回复
+- [x] 歌曲喜欢
+- [x] 歌曲评论、评论回复
 - [ ] 本地音乐
 - [ ] 歌曲缓存
+- [ ] 通知栏
+- [ ] 桌面小组件
+- [ ] 歌曲详细操作（信息、收藏等）
 - [ ] 首页轮播、“每日推荐”、“歌单“、”排行榜“、”电台“、”直播“等入口功能
 
 #### 使用到的架构组件
