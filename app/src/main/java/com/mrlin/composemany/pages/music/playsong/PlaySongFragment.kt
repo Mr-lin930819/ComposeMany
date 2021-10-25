@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -132,53 +133,16 @@ private fun PlaySong(
             contentScale = ContentScale.FillHeight
         )
         Column(modifier = Modifier.padding(bottom = 12.dp)) {
-            //唱片显示
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 36.dp)
-                    .weight(1.0f)
-            ) {
-                //唱片旋转角度
-                val rotation = infiniteRotation(isPlaying)
-                //唱针旋转角度
-                val stylusRotation by animateFloatAsState(targetValue = if (isPlaying) 0f else -30f)
-                //歌曲封面
-                Image(
-                    painter = rememberImagePainter(song?.picUrl?.limitSize(200), builder = {
-                        transformations(CircleCropTransformation())
-                    }),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .fillMaxWidth()
-                        .padding(20.dp)
-                        .graphicsLayer {
-                            rotationZ = rotation.value
-                        }
-                )
-                //唱片边框
-                Image(
-                    painter = painterResource(id = R.drawable.bet),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(
-                            Alignment.Center
-                        )
-                )
-                //唱片针
-                Image(
-                    painter = painterResource(id = R.drawable.bgm),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .align(BiasAlignment(0.3f, -1f))
-                        .graphicsLayer {
-                            rotationZ = stylusRotation
-                            transformOrigin = TransformOrigin(0f, 0f)
-                        }
-                )
+            var showLyric by remember { mutableStateOf(false) }
+            val cdAreaModifier = Modifier
+                .fillMaxWidth()
+                .weight(1.0f)
+                .clickable { showLyric = !showLyric }
+            if (showLyric) {
+                Lyric(cdAreaModifier)
+            } else {
+                //唱片显示
+                CD(isPlaying, song, modifier = cdAreaModifier)
             }
             //评论、收藏等歌曲操作
             Row(
@@ -233,6 +197,67 @@ private fun PlaySong(
                 MiniButton(R.drawable.icon_play_songs)
             }
         }
+    }
+}
+
+@Composable
+private fun CD(isPlaying: Boolean, song: Song?, modifier: Modifier) {
+    Box(
+        modifier = modifier.padding(horizontal = 36.dp)
+    ) {
+        //唱片旋转角度
+        val rotation = infiniteRotation(isPlaying)
+        //唱针旋转角度
+        val stylusRotation by animateFloatAsState(targetValue = if (isPlaying) 0f else -30f)
+        //歌曲封面
+        Image(
+            painter = rememberImagePainter(song?.picUrl?.limitSize(200), builder = {
+                transformations(CircleCropTransformation())
+            }),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .align(Alignment.Center)
+                .matchParentSize()
+                .aspectRatio(1.0f)
+                .padding(20.dp)
+                .graphicsLayer {
+                    rotationZ = rotation.value
+                }
+        )
+        //唱片边框
+        Image(
+            painter = painterResource(id = R.drawable.bet),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .align(Alignment.Center)
+                .matchParentSize()
+                .aspectRatio(1.0f)
+                .padding(10.dp),
+        )
+        //唱片针
+        Image(
+            painter = painterResource(id = R.drawable.bgm),
+            contentDescription = null,
+            modifier = Modifier
+                .align(BiasAlignment(0.3f, -1f))
+                .graphicsLayer {
+                    rotationZ = stylusRotation
+                    transformOrigin = TransformOrigin(0f, 0f)
+                }
+        )
+    }
+}
+
+@Composable
+private fun Lyric(modifier: Modifier) {
+    Box(modifier = modifier) {
+        Text(
+            text = "暂无歌词",
+            modifier = Modifier.align(Alignment.Center),
+            style = TextStyle(color = Color.White)
+        )
     }
 }
 

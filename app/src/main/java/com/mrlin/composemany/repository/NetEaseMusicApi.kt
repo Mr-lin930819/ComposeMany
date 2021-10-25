@@ -164,4 +164,10 @@ interface NetEaseMusicApi {
         @Query("pid") pid: Long,
         @Query("tracks") tracks: Long
     ): Call<EmptyResponse>
+
+    /**
+     * 获取歌词
+     */
+    @GET("/lyric")
+    fun lyric(@Query("id") id: Long): Call<LyricData>
 }
