@@ -8,13 +8,9 @@ import com.mrlin.composemany.MusicSettings
 import com.mrlin.composemany.repository.NetEaseMusicApi
 import com.mrlin.composemany.repository.entity.Song
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import retrofit2.await
-import retrofit2.awaitResponse
 import java.io.IOException
 import javax.inject.Inject
 
@@ -30,6 +26,7 @@ class PlaySongsViewModel @Inject constructor(
     private val _isPlaying = MutableStateFlow(false)
     private var tryingSeek = false
     private val _likeList = MutableStateFlow(mutableListOf<Long>())
+    private val _lyric = MutableStateFlow(listOf<Pair<Int, String>>())
     private val _curSong = _curIndex.map { allSongs.value.getOrNull(it) }.stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(), null
     )
@@ -39,6 +36,7 @@ class PlaySongsViewModel @Inject constructor(
     val curProgress: StateFlow<Float> = _curProgress
     val isPlaying: StateFlow<Boolean> = _isPlaying
     val likeList: StateFlow<List<Long>> = _likeList
+    val lyric: StateFlow<List<Pair<Int, String>>> = _lyric
 
     init {
         _mediaPlayer = MediaPlayer()
@@ -56,6 +54,15 @@ class PlaySongsViewModel @Inject constructor(
 
     private fun play() = viewModelScope.launch {
         val songId = _songs.value[_curIndex.value].id
+        launch {
+            //载入歌词
+            try {
+                val lyricData = musicApi.lyric(songId).await()
+                _lyric.value = lyricData.lrc.parseToList()
+            } catch (t: Throwable) {
+                t.printStackTrace()
+            }
+        }
         try {
             val url = musicApi.musicUrl(songId).await().data.firstOrNull()?.url
                 ?: "https://music.163.com/song/media/outer/url?id=${songId}.mp3"

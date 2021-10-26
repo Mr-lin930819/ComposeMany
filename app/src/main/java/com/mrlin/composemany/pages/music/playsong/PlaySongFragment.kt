@@ -8,6 +8,9 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -23,6 +26,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,6 +49,7 @@ import com.mrlin.composemany.repository.entity.limitSize
 import com.mrlin.composemany.ui.theme.ComposeManyTheme
 import com.mrlin.composemany.utils.simpleNumText
 import dagger.hilt.android.AndroidEntryPoint
+import kotlin.math.abs
 
 /*********************************
  * 歌曲播放
@@ -66,13 +71,14 @@ class PlaySongFragment : Fragment() {
         val isPlaying by playSongViewModel.isPlaying.collectAsState()
         val commentData by viewModel.songComment.collectAsState()
         val likeList by playSongViewModel.likeList.collectAsState()
+        val lyric by playSongViewModel.lyric.collectAsState()
         LaunchedEffect(key1 = curSong, block = {
             //歌曲更换后自动载入对应评论
             viewModel.loadComment(curSong ?: return@LaunchedEffect)
         })
         ComposeManyTheme {
             val likeSong = likeList.contains(curSong?.id)
-            PlaySong(song = curSong, curProgress, isPlaying, commentData, likeSong) {
+            PlaySong(song = curSong, curProgress, isPlaying, commentData, likeSong, lyric) {
                 when (it) {
                     is Event.TrySeek -> playSongViewModel.trySeek(it.progress)
                     is Event.Seek -> playSongViewModel.seekPlay()
@@ -98,6 +104,7 @@ private fun PlaySong(
     isPlaying: Boolean = false,
     commentData: SongCommentData? = null,
     likeSong: Boolean = false,
+    lyric: List<Pair<Int, String>> = emptyList(),
     onEvent: ((Event) -> Unit)? = null
 ) {
     Scaffold(
@@ -139,7 +146,8 @@ private fun PlaySong(
                 .weight(1.0f)
                 .clickable { showLyric = !showLyric }
             if (showLyric) {
-                Lyric(cdAreaModifier)
+                //歌词显示
+                Lyric(cdAreaModifier, lyric, progress)
             } else {
                 //唱片显示
                 CD(isPlaying, song, modifier = cdAreaModifier)
@@ -251,13 +259,32 @@ private fun CD(isPlaying: Boolean, song: Song?, modifier: Modifier) {
 }
 
 @Composable
-private fun Lyric(modifier: Modifier) {
-    Box(modifier = modifier) {
-        Text(
-            text = "暂无歌词",
-            modifier = Modifier.align(Alignment.Center),
-            style = TextStyle(color = Color.White)
-        )
+private fun Lyric(modifier: Modifier, lyric: List<Pair<Int, String>>, progress: Float) {
+    if (lyric.isEmpty()) {
+        Text(text = "暂无歌词", color = Color.White, textAlign = TextAlign.Center)
+        return
+    }
+    val maxTime = lyric.last().first
+    //TODO 还没想到更好的定位当前播放的歌词位置，先使用进度估算
+    val curPosition = lyric.indexOfFirst {
+        val lyricProcess = it.first * 1.0f / maxTime
+        abs(progress - lyricProcess) < 0.01
+    }
+    val lazyListState = rememberLazyListState()
+    LaunchedEffect(key1 = curPosition, block = {
+        curPosition.takeIf { it >= 0 }?.let { lazyListState.scrollToItem(it) }
+    })
+    LazyColumn(modifier = modifier.padding(vertical = 16.dp), state = lazyListState) {
+        itemsIndexed(lyric) { pos, lrcData ->
+            Text(
+                text = lrcData.second,
+                Modifier.fillMaxWidth(),
+                style = TextStyle(
+                    color = if (pos == curPosition) Color.White else Color.LightGray,
+                    textAlign = TextAlign.Center
+                ),
+            )
+        }
     }
 }
 
