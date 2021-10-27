@@ -22,14 +22,14 @@ data class User(
     val token: String? = null,
     val cookie: String? = null,
     @PrimaryKey
-    var accountId: Int = account.id,
+    var accountId: Long = account.id,
 ) {
     fun isValid() = code < 299
 }
 
 data class Account(
     @ColumnInfo(name = "ua_id")
-    val id: Int,
+    val id: Long,
     @ColumnInfo(name = "ua_user_name")
     val userName: String,
     @ColumnInfo(name = "ua_type")

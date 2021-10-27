@@ -108,7 +108,7 @@ class MusicHomeViewModel @Inject constructor(
      */
     private fun loadMyMusicPage(user: User?) = busyWork(_myPlayList) {
         return@busyWork MyPlayListLoaded(
-            netEaseMusicApi.selfPlaylistData(user?.accountId?.toLong() ?: 0).await().playlist, user
+            netEaseMusicApi.selfPlaylistData(user?.accountId ?: 0).await().playlist, user
         )
     }
 }

@@ -36,7 +36,7 @@ data class PlayList(
 }
 
 data class Subscribers(
-    val userId: Int,
+    val userId: Long,
 )
 
 data class Track(
