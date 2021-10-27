@@ -39,13 +39,13 @@ data class Account(
     @ColumnInfo(name = "ua_whitelist_authority")
     val whitelistAuthority: Int,
     @ColumnInfo(name = "ua_create_time")
-    val createTime: Int,
+    val createTime: Long,
     @ColumnInfo(name = "ua_salt")
     val salt: String,
     @ColumnInfo(name = "ua_token_version")
     val tokenVersion: Int,
     @ColumnInfo(name = "ua_ban")
-    val ban: Int,
+    val ban: Long,
     @ColumnInfo(name = "ua_baoyue_version")
     val baoyueVersion: Int,
     @ColumnInfo(name = "ua_donate_version")
