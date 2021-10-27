@@ -28,7 +28,7 @@ import com.google.accompanist.placeholder.material.shimmer
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun CustomBanner(urls: List<String>, height: Int, onTap: (Int) -> Unit) {
-    val pagerState = rememberPagerState(pageCount = urls.size)
+    val pagerState = rememberPagerState()
     Box(
         Modifier
             .height(height.dp)
@@ -36,7 +36,7 @@ fun CustomBanner(urls: List<String>, height: Int, onTap: (Int) -> Unit) {
             .padding(8.dp)
             .placeholder(urls.isEmpty(), highlight = PlaceholderHighlight.shimmer())
     ) {
-        HorizontalPager(state = pagerState) { page ->
+        HorizontalPager(state = pagerState, count = urls.size) { page ->
             Image(
                 painter = rememberImagePainter(urls[page]),
                 contentDescription = null,

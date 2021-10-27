@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.MoreVert
@@ -168,7 +170,7 @@ private fun Home(
             "我的" to { Mine(myPlayList, onToScreen = onToScreen) },
             "动态" to { NewAction() }
         )
-        val pagerState = rememberPagerState(pageCount = 3)
+        val pagerState = rememberPagerState()
         val pagerScope = rememberCoroutineScope()
         TabRow(selectedTabIndex = pagerState.currentPage, backgroundColor = Color.Transparent) {
             pages.forEachIndexed { index, page ->
@@ -178,7 +180,7 @@ private fun Home(
             }
         }
         HorizontalPager(
-            state = pagerState, verticalAlignment = Alignment.Top
+            state = pagerState, verticalAlignment = Alignment.Top, count = 3
         ) { page -> pages[page].second() }
     }
 }

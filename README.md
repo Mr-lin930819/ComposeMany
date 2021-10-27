@@ -15,9 +15,9 @@
 
 #### 功能实现分析
 
-在掘金写了篇简单的文章概述了音乐功能的实现思路：
+**在掘金写了篇简单的文章概述了音乐功能的实现思路：**
 
-[用Compose实现轻量版网易云音乐 - 掘金 (juejin.cn)](https://juejin.cn/post/7011895995722121247)
+**[用Compose实现轻量版网易云音乐 - 掘金 (juejin.cn)](https://juejin.cn/post/7011895995722121247)**
 
 #### 关于服务端
 
@@ -34,8 +34,8 @@ fun provideNetEaseMusicRetrofit(
   cookieDataStore: DataStore<CookieStore>
 ): Retrofit = Retrofit.Builder()
 		.baseUrl("https://你的专属Vercel站点域名.vercel.app/")
-	    ... ...
-    	.build()
+		... ...
+		.build()
 ```
 
 #### 部分界面效果图
@@ -47,14 +47,17 @@ fun provideNetEaseMusicRetrofit(
 - 歌单内歌曲的播放
 - 歌曲评论、楼层回复评论显示
 
-<img src="https://github.com/Mr-lin930819/ComposeMany/raw/main/screenshots/music_main.jpg" width=240 alt="music_main" />  <img src="https://github.com/Mr-lin930819/ComposeMany/raw/main/screenshots/play_list.jpeg" width=240 alt="play_list" />  <img src="https://github.com/Mr-lin930819/ComposeMany/raw/main/screenshots/song_play.png" width=240 alt="song_play" />
-<img src="https://github.com/Mr-lin930819/ComposeMany/raw/main/screenshots/comments.png" width=240 alt="comments" />  <img src="https://github.com/Mr-lin930819/ComposeMany/raw/main/screenshots/floor_comment.jpg" width=240 alt="floor_comment" />
+<img src="https://github.com/Mr-lin930819/ComposeMany/raw/main/screenshots/music_main.jpg" width=240 alt="music_main" />  <img src="https://github.com/Mr-lin930819/ComposeMany/raw/main/screenshots/play_list.jpeg" width=240 alt="play_list" />  <img src="https://github.com/Mr-lin930819/ComposeMany/raw/main/screenshots/song_play.png" width=240 alt="song_play" />  <img src="https://github.com/Mr-lin930819/ComposeMany/raw/main/screenshots/lyric.jpg" width=240 alt="lyric" />
+ <img src="https://github.com/Mr-lin930819/ComposeMany/raw/main/screenshots/comments.png" width=240 alt="comments" />  <img src="https://github.com/Mr-lin930819/ComposeMany/raw/main/screenshots/floor_comment.jpg" width=240 alt="floor_comment" />
 
 #### 待实现功能
 
 - [x] 评论点赞
 - [x] 歌曲喜欢
 - [x] 歌曲评论、评论回复
+  - [ ] 楼层内回复
+- [x] 歌曲歌词显示
+  - [ ] 精确当前句位置显示、滚动
 - [ ] 本地音乐
 - [ ] 歌曲缓存
 - [ ] 通知栏

@@ -14,13 +14,13 @@ data class LyricData(
          */
         fun parseToList(): List<Pair<Int, String>> {
             val lyrics = mutableListOf<Pair<Int, String>>()
-            val pattern = Pattern.compile("\\[(\\d{1,2}):(\\d{1,2}).(\\d{1,2})](.+)")
+            val pattern = Pattern.compile("\\[(\\d{1,2}):(\\d{1,2}).(\\d{1,3})](.+)")
             val matcher = pattern.matcher(lyric)
             while (matcher.find()) {
                 val min = matcher.group(1)?.toIntOrNull() ?: 0
                 val sec = matcher.group(2)?.toIntOrNull() ?: 0
-                val mill = matcher.group(3)?.toIntOrNull() ?: 0
-                val time = min * 60 * 1000 + sec * 1000 + mill * 10
+                val mill = "0.${matcher.group(3)}".toFloatOrNull() ?: 0f
+                val time = min * 60 * 1000 + sec * 1000 + (mill * 1000).toInt()
                 val text = matcher.group(4).orEmpty()
                 lyrics.add(time to text)
             }
