@@ -13,6 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mrlin.composemany.pages.music.home.MusicHomeViewModel
+import com.mrlin.composemany.utils.onHandleBack
 
 /*********************************
  * 音乐登录界面
@@ -20,7 +21,7 @@ import com.mrlin.composemany.pages.music.home.MusicHomeViewModel
  * 创建于 2021年08月19日
  ******************************** */
 @Composable
-fun MusicLogin(vm: MusicHomeViewModel? = null) {
+fun MusicLogin(vm: MusicHomeViewModel? = null, onQuit: (() -> Unit)? = null) {
     Scaffold(topBar = {
         TopAppBar(title = { Text(text = "手机号登录") })
     }) {
@@ -33,13 +34,15 @@ fun MusicLogin(vm: MusicHomeViewModel? = null) {
                 label = { Text(text = "手机", style = MaterialTheme.typography.body1) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                onValueChange = { phone = it })
+                onValueChange = { phone = it },
+                modifier = Modifier.onHandleBack(onQuit))
             Spacer(modifier = Modifier.height(10.dp))
             OutlinedTextField(value = password,
                 label = { Text(text = "密码", style = MaterialTheme.typography.body1) },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
-                onValueChange = { password = it })
+                onValueChange = { password = it },
+                modifier = Modifier.onHandleBack(onQuit))
             Spacer(modifier = Modifier.height(50.dp))
             Button(onClick = { vm?.login(phone, password) }, modifier = Modifier.fillMaxWidth(0.5f)) {
                 Text(text = "提交")

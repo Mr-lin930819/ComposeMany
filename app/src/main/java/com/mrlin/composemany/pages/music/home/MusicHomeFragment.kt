@@ -7,7 +7,10 @@ import android.view.ViewGroup
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -63,7 +66,7 @@ class NetEaseMusicHomeFragment : Fragment() {
             Crossfade(targetState = userState) {
                 when (it) {
                     is MusicHomeState.Splash -> MusicSplash()
-                    is MusicHomeState.Visitor -> MusicLogin(viewModel)
+                    is MusicHomeState.Visitor -> MusicLogin(viewModel) { requireActivity().finish() }
                     is MusicHomeState.Login -> Column {
                         MusicHome(it.user, modifier = Modifier.weight(1f)) { screen ->
                             when (screen) {
