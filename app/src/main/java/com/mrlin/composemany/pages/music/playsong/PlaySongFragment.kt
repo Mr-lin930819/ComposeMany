@@ -34,7 +34,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import coil.transform.BlurTransformation
 import coil.transform.CircleCropTransformation
@@ -96,7 +95,9 @@ class PlaySongFragment : Fragment() {
     }
 }
 
-@OptIn(ExperimentalCoilApi::class)
+/**
+ * 歌曲播放主界面
+ */
 @Composable
 private fun PlaySong(
     song: Song?,
@@ -195,7 +196,9 @@ private fun PlaySong(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 MiniButton(R.drawable.icon_song_play_type_1)
-                MiniButton(R.drawable.icon_song_left)
+                MiniButton(R.drawable.icon_song_left) {
+                    onEvent?.invoke(Event.PreviousSong)
+                }
                 MiniButton(if (isPlaying) R.drawable.icon_song_pause else R.drawable.icon_song_play) {
                     onEvent?.invoke(Event.TogglePlay)
                 }
@@ -261,7 +264,7 @@ private fun CD(isPlaying: Boolean, song: Song?, modifier: Modifier) {
 @Composable
 private fun Lyric(modifier: Modifier, lyric: List<Pair<Int, String>>, progress: Float) {
     if (lyric.isEmpty()) {
-        Text(text = "暂无歌词", color = Color.White, textAlign = TextAlign.Center)
+        Text(text = "暂无歌词", color = Color.White, textAlign = TextAlign.Center, modifier = modifier)
         return
     }
     val maxTime = lyric.last().first

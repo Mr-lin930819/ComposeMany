@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.google.accompanist.placeholder.material.placeholder
 import com.mrlin.composemany.R
@@ -112,7 +111,6 @@ private fun PlaylistTitle(title: String, count: Int, expanded: Boolean, onToggle
 /**
  * 歌单项
  */
-@OptIn(ExperimentalCoilApi::class)
 @Composable
 private fun PlaylistItem(playList: PlayList, onClick: () -> Unit) {
     Row(

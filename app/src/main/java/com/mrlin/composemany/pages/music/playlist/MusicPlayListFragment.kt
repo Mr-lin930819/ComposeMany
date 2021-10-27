@@ -15,7 +15,9 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode
@@ -37,7 +39,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import coil.request.CachePolicy
 import coil.request.ImageRequest
@@ -160,7 +161,6 @@ class MusicPlayListFragment : Fragment() {
 /**
  * 标题栏内容背景
  */
-@OptIn(ExperimentalCoilApi::class)
 @Composable
 private fun BoxScope.AppBarBackground(recommend: Recommend) {
     val context = LocalContext.current
