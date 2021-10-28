@@ -130,6 +130,7 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     //折叠工具栏
     implementation "me.onebone:toolbar-compose:2.2.0"
+    implementation "br.com.devsrsouza.compose.icons.android:font-awesome:1.0.0"
 }
 
 kapt {

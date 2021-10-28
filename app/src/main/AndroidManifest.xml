@@ -29,6 +29,7 @@
             </intent-filter>
         </activity>
         <activity android:name="com.mrlin.composemany.pages.fund.FundActivity" />
+        <activity android:name=".pages.mall.MallActivity" />
     </application>
 
 </manifest>

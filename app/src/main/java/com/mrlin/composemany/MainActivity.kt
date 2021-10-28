@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.mrlin.composemany.pages.fund.FundActivity
+import com.mrlin.composemany.pages.mall.MallActivity
 import com.mrlin.composemany.pages.music.MusicSplashActivity
 import com.mrlin.composemany.ui.theme.Blue500
 import com.mrlin.composemany.ui.theme.ComposeManyTheme
@@ -55,6 +56,7 @@ class MainActivity : ComponentActivity() {
                             is MainMenu.NetEaseMusic -> startActivity(
                                 Intent(this, MusicSplashActivity::class.java)
                             )
+                            is MainMenu.Mall -> startActivity(Intent(this, MallActivity::class.java))
                         }
                     })
                 }
@@ -138,7 +140,7 @@ fun DefaultPreview() {
     ComposeManyTheme {
         Greeting(
             "Android", MutableStateFlow("2020-10-10 10:00:00"), listOf(
-                MainMenu.Fund()
+                MainMenu.Fund(), MainMenu.Mall()
             )
         )
     }
