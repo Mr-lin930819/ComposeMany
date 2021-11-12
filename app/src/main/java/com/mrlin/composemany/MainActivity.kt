@@ -45,10 +45,10 @@ class MainActivity : ComponentActivity() {
                 systemUiController.setStatusBarColor(color = Blue500)
                 systemUiController.setNavigationBarColor(color = Color.Black)
             }
+            LaunchedEffect(key1 = true, block = { viewModel.runTimer() })
             ComposeManyTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
-                    viewModel.runTimer()
                     Greeting("Compose", viewModel.time, viewModel.menuList(), onMenuClick = { menu ->
                         when (menu) {
                             is MainMenu.Fund -> startActivity(Intent(this, FundActivity::class.java))
