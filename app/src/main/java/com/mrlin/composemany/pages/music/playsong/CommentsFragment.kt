@@ -60,8 +60,7 @@ class CommentsFragment : Fragment() {
     @Inject
     lateinit var musicSettingsStore: DataStore<MusicSettings>
 
-    @ExperimentalMaterialApi
-    @OptIn(ExperimentalFoundationApi::class)
+    @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -332,7 +331,7 @@ class CommentsFragment : Fragment() {
                 )
             }
             Spacer(modifier = Modifier.weight(1.0f))
-            if (user.userId == musicSettings.userAccountId.toLong()) {
+            if (user.userId == musicSettings.userAccountId) {
                 IconButton(onClick = { onDeleteClick?.invoke() }) {
                     Text(text = "删除")
                 }

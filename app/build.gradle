@@ -9,6 +9,7 @@ plugins {
     id 'kotlin-parcelize'
     //navigation 安全类型数据
     id "androidx.navigation.safeargs.kotlin"
+    id 'com.bytedance.android.aabResGuard'
 }
 
 android {
@@ -38,8 +39,9 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
         }
         debug {
             signingConfig signingConfigs.debug
@@ -77,7 +79,7 @@ android {
 dependencies {
 
     implementation 'androidx.core:core-ktx:1.6.0'
-    implementation 'androidx.appcompat:appcompat:1.5.0'
+    implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'com.google.android.material:material:1.5.0'
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
@@ -162,4 +164,46 @@ protobuf {
             }
         }
     }
+}
+
+aabResGuard {
+    whiteList = [ // White list rules
+                  "*.R.raw.*",
+                  "*.R.drawable.icon",
+                  "*.R.mipmap.ic_launcher",
+                  "*.R.mipmap.logo",
+                  "*.R.string.default_web_client_id",
+                  "*.R.string.firebase_database_url",
+                  "*.R.string.gcm_defaultSenderId",
+                  "*.R.string.google_api_key",
+                  "*.R.string.google_app_id",
+                  "*.R.string.google_crash_reporting_api_key",
+                  "*.R.string.google_storage_bucket",
+                  "*.R.string.project_id",
+                  "*.R.string.com.crashlytics.android.build_id",
+                  "*.R.string.tt_*",
+                  "*.R.layout.tt_*",
+                  "*.R.drawable.tt_*",
+                  "*.R.layout.notification_*",
+                  "*.R.string.star_*",
+                  "*.R.dimen.tt_*",
+                  "*.R.integer.tt_*",
+                  "*.R.anim.tt_*",
+                  "*.R.color.tt_*",
+                  "*.R.style.tt_*",
+                  "*.R.style.Theme.Dialog.TT_*",
+                  "*.R.style.quick_*",
+                  "*.R.style.EditTextStyle*",
+                  "*.R.id.tt_*"
+    ]
+    obfuscatedBundleFileName = "compose_many.aab"
+    // Obfuscated file name, must end with '.aab'
+    mergeDuplicatedRes = false // Whether to allow the merge of duplicate resources
+    enableFilterFiles = false // Whether to allow filter files
+    filterList = [ // file filter rules
+                   "META-INF/*"
+    ]
+    enableFilterStrings = false // switch of filter strings
+    unusedStringPath = file("unused.txt").toPath() // strings will be filtered in this file
+    languageWhiteList = [] // keep en,en-xx,zh,zh-xx etc. remove others.
 }
