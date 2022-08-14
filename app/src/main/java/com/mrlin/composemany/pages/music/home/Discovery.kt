@@ -2,9 +2,10 @@ package com.mrlin.composemany.pages.music.home
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
@@ -67,7 +68,6 @@ internal fun Discovery(
 /**
  * 分类列表
  */
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun CategoryList(onClick: (String) -> Unit) {
     val menus = mapOf(
@@ -79,7 +79,7 @@ private fun CategoryList(onClick: (String) -> Unit) {
     )
     LazyVerticalGrid(
         modifier = Modifier.wrapContentHeight(),
-        cells = GridCells.Fixed(5),
+        columns = GridCells.Fixed(5),
         content = {
             items(menus.entries.toList()) {
                 Column(

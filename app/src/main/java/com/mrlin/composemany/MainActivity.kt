@@ -5,13 +5,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.GridCells
-import androidx.compose.foundation.lazy.LazyVerticalGrid
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -65,7 +64,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Greeting(
     name: String,
@@ -117,11 +115,11 @@ private fun Greeting(
             }
         }
     }, scaffoldState = scaffoldState, backgroundColor = Color.LightGray.copy(alpha = 0.3f)) {
-        LazyVerticalGrid(cells = GridCells.Fixed(count = 3)) {
+        LazyVerticalGrid(columns = GridCells.Fixed(count = 3), Modifier.padding(it)) {
             items(menuList) {
                 Column(
                     modifier = Modifier
-                        .fillParentMaxWidth(0.8f)
+                        .fillMaxWidth(0.8f)
                         .padding(8.dp)
                         .clickable { onMenuClick?.invoke(it) },
                     horizontalAlignment = Alignment.CenterHorizontally
