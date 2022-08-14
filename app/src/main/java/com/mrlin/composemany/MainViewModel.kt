@@ -22,7 +22,7 @@ class MainViewModel : ViewModel() {
     }
 
     fun menuList() = listOf(
-        MainMenu.Fund(), MainMenu.NetEaseMusic()
+        MainMenu.Fund(), MainMenu.NetEaseMusic(), MainMenu.Mall()
     )
 
     companion object {
@@ -34,8 +34,10 @@ class MainViewModel : ViewModel() {
  * 菜单图标数据来源于：
  * 1）[https://www.iconfont.cn/collections/detail?spm=a313x.7781069.1998910419.dc64b3430&cid=32207]
  * 2）[https://www.iconfont.cn/collections/detail?spm=a313x.7781069.1998910419.dc64b3430&cid=16724]
+ * 3）[https://www.iconfont.cn/collections/detail?spm=a313x.7781069.1998910419.dc64b3430&cid=23172]
  */
 sealed class MainMenu(val name: String, @DrawableRes val icon: Int = R.drawable.discuss) {
     class Fund : MainMenu("基金", R.drawable.discuss)
     class NetEaseMusic : MainMenu("音乐", R.drawable.music)
+    class Mall : MainMenu("商城", R.drawable.mall)
 }
