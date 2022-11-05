@@ -43,7 +43,6 @@ import com.mrlin.composemany.repository.entity.*
 import com.mrlin.composemany.ui.theme.LightGray
 import com.mrlin.composemany.utils.simpleNumText
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -143,8 +142,8 @@ class CommentsFragment : Fragment() {
                     }
                 })
             }
-        ) {
-            Column {
+        ) { paddingValue ->
+            Column(Modifier.padding(paddingValue)) {
                 LazyColumn(modifier = Modifier.weight(1f)) {
                     item { SongInfoArea(song) }
                     stickyHeader {
@@ -357,8 +356,6 @@ class CommentsFragment : Fragment() {
     /**
      * 回复楼层评论
      */
-    @ExperimentalFoundationApi
-    @ExperimentalMaterialApi
     @Composable
     private fun ReplySheet(reply: FloorCommentData, onEvent: (Event) -> Unit) {
         Column(

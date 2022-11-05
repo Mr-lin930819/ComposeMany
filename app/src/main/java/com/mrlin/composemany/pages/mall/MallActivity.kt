@@ -3,10 +3,12 @@ package com.mrlin.composemany.pages.mall
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -60,7 +62,7 @@ private fun PageContent(navController: NavController) {
             }
         }
     }) {
-        NavHost(navController = bottomNavController, startDestination = MallScreen.Home.route) {
+        NavHost(navController = bottomNavController, startDestination = MallScreen.Home.route, Modifier.padding(it)) {
             composable(MallScreen.Home.route) { MallHome(navController = navController) }
             composable(MallScreen.Category.route) {
                 Text(text = "分类")

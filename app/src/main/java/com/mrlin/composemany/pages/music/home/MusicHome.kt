@@ -51,8 +51,8 @@ fun MusicHome(
         drawerContent = { Drawer(user = user) },
         scaffoldState = scaffoldState,
         modifier = modifier
-    ) {
-        Home(musicHomeViewModel, onDrawerClick = {
+    ) { padding ->
+        Home(padding, musicHomeViewModel, onDrawerClick = {
             coroutineScope.launch {
                 scaffoldState.drawerState.open()
             }
@@ -125,12 +125,14 @@ private fun DrawerItem(title: String, imageVector: ImageVector? = null) {
 @Composable
 @OptIn(ExperimentalPagerApi::class)
 private fun Home(
+    paddingValues: PaddingValues,
     vm: MusicHomeViewModel? = null,
     onDrawerClick: (() -> Unit)? = null,
     onToScreen: ((Any) -> Unit)? = null
 ) {
     Column(
         modifier = Modifier
+            .padding(paddingValues)
             .fillMaxSize()
             .background(color = LightGray)
     ) {
@@ -165,24 +167,34 @@ private fun Home(
             }
             Spacer(modifier = Modifier.width(8.dp))
         }
-        val pages: List<Pair<String, @Composable () -> Unit>> = listOf(
-            "发现" to { Discovery(discoveryViewData, onToScreen = onToScreen) },
-            "我的" to { Mine(myPlayList, onToScreen = onToScreen) },
-            "动态" to { NewAction() }
-        )
+        val pages = listOf(Page.Recovery, Page.Mine, Page.Active)
         val pagerState = rememberPagerState()
         val pagerScope = rememberCoroutineScope()
         TabRow(selectedTabIndex = pagerState.currentPage, backgroundColor = Color.Transparent) {
             pages.forEachIndexed { index, page ->
-                Tab(tab = page.first, selected = index == pagerState.currentPage) {
+                Tab(tab = page.label, selected = index == pagerState.currentPage) {
                     pagerScope.launch { pagerState.scrollToPage(index) }
                 }
             }
         }
         HorizontalPager(
             state = pagerState, verticalAlignment = Alignment.Top, count = 3
-        ) { page -> pages[page].second() }
+        ) { page ->
+            when (pages[page]) {
+                Page.Recovery -> Discovery(discoveryViewData, onToScreen = onToScreen)
+                Page.Mine -> Mine(myPlayList, onToScreen = onToScreen)
+                Page.Active -> NewAction()
+            }
+        }
     }
+}
+
+private sealed class Page(
+    val label: String
+) {
+    object Recovery : Page("发现")
+    object Mine : Page("我的")
+    object Active : Page("动态")
 }
 
 @Composable
@@ -205,6 +217,6 @@ private fun NewAction() {
 @Composable
 fun MusicHomePagePreview() {
     ComposeManyTheme {
-        Home()
+        Home(PaddingValues(0.dp))
     }
 }

@@ -24,10 +24,10 @@ import com.mrlin.composemany.utils.onHandleBack
 fun MusicLogin(vm: MusicHomeViewModel? = null, onQuit: (() -> Unit)? = null) {
     Scaffold(topBar = {
         TopAppBar(title = { Text(text = "手机号登录") })
-    }) {
+    }) { padding ->
         var phone by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
-        Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(modifier = Modifier.padding(padding).fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = "欢迎使用云音乐", style = TextStyle(fontSize = 34.sp))
             Spacer(modifier = Modifier.height(30.dp))
             OutlinedTextField(value = phone,
